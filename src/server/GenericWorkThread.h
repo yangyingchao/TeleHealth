@@ -1,5 +1,6 @@
 #ifndef _GENERICWORKTHREAD_H_
 #define _GENERICWORKTHREAD_H_
+#include "SmartPointer.h"
 #include "Thread.h"
 #include "THMessage.pb.h"
 

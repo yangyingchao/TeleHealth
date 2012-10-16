@@ -1,6 +1,7 @@
 #include "DBThread.h"
 #include "LogUtils.h"
 #include <string>
+#include "MessageHeader.pb.h"
 #include <iostream>
 using namespace std;
 
@@ -75,6 +76,7 @@ void DBThread::StartRealThread()
             continue;
         }
 
+        Message msg;
         const MessageHeader& header = msg.header();
         //TODO: Check header to see if it is valid.
         switch (header.type())
@@ -99,4 +101,3 @@ void DBThread::StartRealThread()
         m_pListenSock->send(msg);
     }
 }
-

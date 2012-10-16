@@ -8,7 +8,7 @@
     :name "thpub"
     :path ""
     :source '("DataBase.h" "StringUtils.hpp" "DataBase/DataBase.cpp" "Generated/MessageHeader.pb.cc" "Generated/MessageHeader.pb.h" "Generated/THMessage.pb.cc" "Generated/THMessage.pb.h" "DataBase/DataBaseSqlite.cpp" "DataBase/DataBaseSqlite.h" "DataBase/TableComponent.cpp" "DataBase/TableComponent.h" "Utils.cpp" "Generated/DBTables.pb.cc" "Generated/DBTables.pb.h")
-    :auxsource '("LogUtils.h" "Utils.h" "units.h")
+    :auxsource '("LogUtils.h" "Utils.h" "units.h" "SmartPointer.h")
     :configuration-variables 'nil
     )
    )
