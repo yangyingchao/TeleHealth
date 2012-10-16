@@ -1,0 +1,6 @@
+import "MessageHeader.proto";
+
+message Message {
+    required MessageHeader      header = 1;
+    optional bytes      data = 4;
+}

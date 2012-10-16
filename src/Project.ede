@@ -1,0 +1,8 @@
+;; Object th_src
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "th_src"
+  :file "Project.ede"
+  :name "th_src"
+  :targets 'nil
+  :makefile-type 'Makefile.am
+  )

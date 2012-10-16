@@ -1,0 +1,18 @@
+;; Object test
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "test"
+  :file "Project.ede"
+  :name "test"
+  :targets (list 
+   (ede-proj-target-makefile-program "test"
+    :name "test"
+    :path ""
+    :source '("TestSqlite.cpp" "main.cpp" "../public/DataBase.h" "../public/DataBase/DataBase.cpp" "../public/DataBase/DataBaseSqlite.cpp" "../public/DataBase/DataBaseSqlite.h" "../public/DataBase/TableComponent.cpp" "../public/DataBase/TableComponent.h" "../public/Utils.cpp" "../public/Generated/DBTables.pb.cc" "../public/Generated/DBTables.pb.h" "../public/Utils.h")
+    :auxsource '("TestSqlite.h")
+    :configuration-variables 'nil
+    )
+   )
+  :makefile-type 'Makefile.am
+  :variables '(("AM_CPPFLAGS" . "-I../public -I../public/DataBase -I../public/Generated -I/usr/include/uuid ") ("AM_LDFLAGS" . "-lprotobuf -lz  -lzmq -pthread -L../public -lsqlite3   -lcppunit -luuid"))
+  :configuration-variables 'nil
+  )

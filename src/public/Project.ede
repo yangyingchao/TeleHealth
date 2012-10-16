@@ -1,0 +1,18 @@
+;; Object thpub
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "thpub"
+  :file "Project.ede"
+  :name "thpub"
+  :targets (list 
+   (ede-proj-target-makefile-shared-object "thpub"
+    :name "thpub"
+    :path ""
+    :source '("DataBase.h" "StringUtils.hpp" "DataBase/DataBase.cpp" "Generated/MessageHeader.pb.cc" "Generated/MessageHeader.pb.h" "Generated/THMessage.pb.cc" "Generated/THMessage.pb.h" "DataBase/DataBaseSqlite.cpp" "DataBase/DataBaseSqlite.h" "DataBase/TableComponent.cpp" "DataBase/TableComponent.h" "Utils.cpp" "Generated/DBTables.pb.cc" "Generated/DBTables.pb.h")
+    :auxsource '("LogUtils.h" "Utils.h" "units.h")
+    :configuration-variables 'nil
+    )
+   )
+  :makefile-type 'Makefile.am
+  :variables '(("AM_CPPFLAGS" . "-IGenerated/ -I../Generated/ `pkg-config --cflags uuid`"))
+  :configuration-variables 'nil
+  )

@@ -1,0 +1,13 @@
+OUTDIR=../Generated
+TARGETS=MessageHeader.proto THMessage.proto DBTables.proto
+
+default: all
+
+all: $(TARGETS)
+	protoc -I/--proto_path=$(OUTDIR) --proto_path=. --cpp_out=$(OUTDIR) $^
+
+clean:
+	OLDDIR=$(PWD)
+	cd $(OUTDIR)
+	-rm -f *pb.h *pb.cc
+	cd $(OLDDIR)

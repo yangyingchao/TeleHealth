@@ -1,0 +1,24 @@
+
+Someday, they will be added as sub module...
+
+**** ZeroMQ
+
+     [[http://zguide.zeromq.org/]]
+
+**** Google Protocol Buffer
+
+     [[https://developers.google.com/protocol-buffers/]]
+
+
+* In Gentoo
+
+#+BEGIN_SRC sh
+emerge protobuf zeromq czmq
+#+END_SRC
+
+
+* In Arch Linux
+
+ZeroMQ can be installed using pacman.
+
+As to protobuf, build it using abs.

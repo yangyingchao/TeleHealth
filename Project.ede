@@ -1,0 +1,8 @@
+;; Object TeleHealth
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "TeleHealth"
+  :file "Project.ede"
+  :name "TeleHealth"
+  :targets 'nil
+  :makefile-type 'Makefile.am
+  )
