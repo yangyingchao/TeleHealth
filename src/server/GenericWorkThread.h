@@ -1,8 +1,9 @@
 #ifndef _GENERICWORKTHREAD_H_
 #define _GENERICWORKTHREAD_H_
-#include "SmartPointer.h"
+
 #include "Thread.h"
 #include "THMessage.pb.h"
+#include <ZmqWrapper.h>
 
 #define INPROC_WORK_PORT   "inproc://workerss"
 
@@ -16,9 +17,9 @@ public:
 
 private:
     static void* StaticThreadFunction(void* arg);
-    void StartRealThread();
+    void DoRealWorks();
 
-    shared_ptr<zmq::message_t>  ForwardToDBThread(const Message& msg);
+    shared_ptr<zmq::message_t>  ForwardToDBThread(zmq::message_t* msg);
 
     zmq::context_t* m_pContext;
     zmq::socket_t*  m_pDBSock;

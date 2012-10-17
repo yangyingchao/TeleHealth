@@ -3,12 +3,12 @@
 (ede-proj-project "server"
   :file "Project.ede"
   :name "server"
-  :targets (list
+  :targets (list 
    (ede-proj-target-makefile-program "server"
     :name "server"
     :path ""
-    :source '("ServerSample.cpp" "DBThread.cpp" "GenericWorkThread.cpp")
-    :auxsource '("DBThread.h" "Thread.h" "GenericWorkThread.h")
+    :source '("Server.cpp" "DBThread.cpp" "GenericWorkThread.cpp" "WorkerThread.cpp")
+    :auxsource '("DBThread.h" "Thread.h" "GenericWorkThread.h" "WorkerThread.h")
     :configuration-variables 'nil
     )
    )

@@ -1,7 +1,7 @@
 #include "DBThread.h"
 #include "LogUtils.h"
 #include <string>
-#include "MessageHeader.pb.h"
+#include "THMessage.pb.h"
 #include <iostream>
 using namespace std;
 
@@ -39,12 +39,12 @@ void* DBThread::StaticThreadFunction(void* arg)
         pThis = static_cast<DBThread*>(arg);
         if (pThis)
         {
-            pThis->StartRealThread();
+            pThis->DoRealWorks();
         }
     }
 }
 
-void DBThread::StartRealThread()
+void DBThread::DoRealWorks()
 {
     m_pDataBase = DataBaseFactory::GetInstance(DBT_Sqlite);
     if (!m_pDataBase)
@@ -62,6 +62,7 @@ void DBThread::StartRealThread()
         }
     }
 
+    PDEBUG ("Database is ready\n");
     m_pListenSock = new zmq::socket_t(*m_pContext, ZMQ_REP);
     assert(m_pListenSock);
     m_pListenSock->bind(INPROC_DB_PORT);
@@ -77,6 +78,8 @@ void DBThread::StartRealThread()
         }
 
         Message msg;
+        msg.ParseFromArray(request.data(), request.size());
+        ZMessagePtr rsp;
         const MessageHeader& header = msg.header();
         //TODO: Check header to see if it is valid.
         switch (header.type())
@@ -89,15 +92,29 @@ void DBThread::StartRealThread()
             }
             default:
             {
-                rsp = GenerateResponseMessage(!error);
+                rsp = GenerateResponseMessage(msg);
                 break;
             }
         }
 
         // XXX: Received DB operation request.
         cout << "DBThread: message received from WorkerThread" << endl;
-        string data("I know...");
-        zmq::message_t msg((void*)data.c_str(), data.size(), NULL);
-        m_pListenSock->send(msg);
+        if (rsp)
+        {
+            m_pListenSock->send(*rsp);
+        }
     }
 }
+
+/* See description in header file. */
+ZMessagePtr DBThread::ProcessRegisterUser(const Message& request)
+{
+    return ZMessagePtr();
+}
+
+/* See description in header file. */
+ZMessagePtr DBThread::GenerateResponseMessage(const Message& request)
+{
+    return ZMessagePtr();
+}
+

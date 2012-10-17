@@ -2,8 +2,9 @@
 #define _DATABASETHREAD_H_
 
 #include "Thread.h"
-
+#include <ZmqWrapper.h>
 #include "DataBase.h"
+#include <THMessage.pb.h>
 
 #define INPROC_DB_PORT       "inproc://dbport"
 
@@ -17,7 +18,10 @@ public:
 private:
     // Private Functions.
     static void* StaticThreadFunction(void* arg);
-    void StartRealThread();
+    void DoRealWorks();
+
+    ZMessagePtr ProcessRegisterUser(const Message& request);
+    ZMessagePtr GenerateResponseMessage(const Message& request);
 
     // Private member fields.
     zmq::socket_t*  m_pListenSock;

@@ -109,5 +109,5 @@ void TableComponent::Initialize()
             }
         }
     }
-
+    PDEBUG ("leave\n");
 }

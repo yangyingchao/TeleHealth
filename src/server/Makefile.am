@@ -14,7 +14,7 @@ ede_FILES=Project.ede Makefile.am
 SUBDIRS=
 EXTRA_DIST=Project.ede
 bin_PROGRAMS=server
-server_SOURCES=ServerSample.cpp DBThread.cpp GenericWorkThread.cpp
+server_SOURCES=Server.cpp DBThread.cpp GenericWorkThread.cpp WorkerThread.cpp
 server_LDADD=
 
 # End of Makefile.am

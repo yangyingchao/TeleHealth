@@ -14,11 +14,11 @@ shared_ptr<zmq::message_t>
 GenerateResponseMessage(bool succeeded)
 {
     shared_ptr<zmq::message_t> rsp;
-    BaseMessage msg;
+    Message msg;
     MessageHeader* header = msg.mutable_header();
     if (header)
     {
-        header->set_type(MessageHeader_MessageType_RegisterRsp);
+        header->set_type(RegisterUserRsp);
         header->set_length(1000);
         header->set_version("version.");
         header->set_result(succeeded);
@@ -73,25 +73,29 @@ void *GenericWorkerThread::StaticThreadFunction(void* arg)
         pThis = static_cast<GenericWorkerThread*>(arg);
         if (pThis)
         {
-            pThis->StartRealThread();
+            pThis->DoRealWorks();
         }
     }
 }
 
-void GenericWorkerThread::StartRealThread()
+void GenericWorkerThread::DoRealWorks()
 {
     assert(m_pContext);
+    PDEBUG ("Enter\n");
 
     // Create DB Socket for sending request of DB operations.
     m_pDBSock = new zmq::socket_t(*m_pContext, ZMQ_REQ);
     assert(m_pDBSock);
     m_pDBSock->connect(INPROC_DB_PORT);
 
+    PDEBUG ("1\n");
+
     //Create Work Socket to get Message from Router.
     m_pListenSock = new zmq::socket_t(*m_pContext, ZMQ_REP);
     assert(m_pListenSock);
     m_pListenSock->connect(INPROC_WORK_PORT);
 
+    PDEBUG ("2\n");
     // Following are testing code.
     char filename[64] = {'\0'};
     sprintf(filename, "/tmp/%lu.txt", TID2ULONG(m_tid));
@@ -111,7 +115,7 @@ void GenericWorkerThread::StartRealThread()
             continue;
         }
 
-        BaseMessage msg;
+        Message msg;
         shared_ptr<zmq::message_t> rsp;
         if (!msg.ParseFromArray(request.data(), request.size()))
         {
@@ -138,7 +142,7 @@ void GenericWorkerThread::StartRealThread()
                 case RegisterUserReq:
                 {
                     // Should it block?
-                    rsp = ForwardToDBThread(msg);
+                    rsp = ForwardToDBThread(&request);
                     break;
                 }
                 default:
@@ -155,12 +159,15 @@ void GenericWorkerThread::StartRealThread()
 }
 
 shared_ptr <zmq::message_t>
-GenericWorkerThread::ForwardToDBThread(const Message& msg)
+GenericWorkerThread::ForwardToDBThread(zmq::message_t* msg)
 {
-    m_pDBSock->send(msg);
-    shared_ptr <zmq::message_t> rsp =
-            shared_ptr <zmq::message_t>(new <zmq::message_t>);
-    m_pDBSock->recv(*rsp);
+    ZMessagePtr rsp;
+    if (msg)
+    {
+        m_pDBSock->send(*msg);
+        rsp.reset(new zmq::message_t);
+        m_pDBSock->recv(rsp.get());
+    }
     return rsp;
 }
 

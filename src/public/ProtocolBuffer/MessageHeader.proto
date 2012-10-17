@@ -1,11 +1,11 @@
-    enum MessageType {
-        Invalid  = 0;
+enum MessageType {
+    Invalid  = 0;
 
-        RegisterUserReq = 1;
-        RegisterUserRsp = 2;
+    RegisterUserReq = 1;
+    RegisterUserRsp = 2;
 
-        Plain    = 1000;
-    }
+    Plain    = 1000;
+}
 
 
 message MessageHeader {

@@ -22,18 +22,19 @@ shared_ptr<zmq::message_t> GenerateMessage(int i)
 {
     shared_ptr<zmq::message_t> msg;
 
-    BaseMessage bmsg;
+    Message bmsg;
     MessageHeader* header = bmsg.mutable_header();
     header->set_version("20120730");
     header->set_length(1024);
     if (i%2 == 0)
     {
-        header->set_type(MessageHeader_MessageType_Plain);
+        header->set_type(Plain);
     }
     else
     {
-        header->set_type(MessageHeader_MessageType_Invalid);
+        header->set_type(Invalid);
     }
+    header->set_session_id(string(""));
 
     bmsg.set_data(string("Message from client: ") +
                   StringUtils::Number2String(getpid()) + ", counter: " +
@@ -58,7 +59,7 @@ shared_ptr<zmq::message_t> GenerateMessage(int i)
             fs.flush();
             fs.close();
         }
-        BaseMessage tmpMsg;
+        Message tmpMsg;
         if (!tmpMsg.ParseFromString(data))
         {
             PDEBUG ("failed to parse after serialize.\n");
@@ -90,7 +91,7 @@ int main ()
         socket.recv (&reply);
         if (reply.size())
         {
-            BaseMessage msg;
+            Message msg;
             if (msg.ParseFromArray(reply.data(), reply.size()))
             {
                 const MessageHeader& header = msg.header();

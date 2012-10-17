@@ -35,6 +35,7 @@ DataBaseSqlite::~DataBaseSqlite()
 
 DB_Error DataBaseSqlite::Open(const string & path)
 {
+    PDEBUG ("enter, path: %s\n", path.c_str());
     DB_Error ret = DB_OK;
     m_dbPath = path;
     if (!path.empty())
@@ -45,6 +46,7 @@ DB_Error DataBaseSqlite::Open(const string & path)
             m_lastErorMsg = string(sqlite3_errmsg(m_pDb));
         }
     }
+    PDEBUG ("return with: %d\n", ret);
     return ret;
 }
 

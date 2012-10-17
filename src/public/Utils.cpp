@@ -1,6 +1,10 @@
 #include "Utils.h"
 
+#ifdef __APPLE__
+#include <uuid/uuid.h>
+#else
 #include <uuid.h>
+#endif
 
 using namespace std;
 
