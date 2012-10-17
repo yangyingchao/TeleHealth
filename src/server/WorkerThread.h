@@ -11,8 +11,10 @@ public:
     int Lock();
     int Unlock();
 
-private:
     pthread_mutex_t m_lock;
+    int  m_sock;
+    bool m_busy;
+    int  m_ThreadIndex;
 };
 
 

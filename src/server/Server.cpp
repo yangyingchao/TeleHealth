@@ -11,12 +11,14 @@
 #include "DBThread.h"
 #include "GenericWorkThread.h"
 #include "WorkerThread.h"
-#include <sys/socket.h>
+#include "Socket.h"
 
 using namespace std;
 using namespace tr1;
 
 #define MAX_WORK_THREAD       100
+
+
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
@@ -27,6 +29,7 @@ void CreateThreadPool()
 {
     for (int i = 0; i < MAX_WORK_THREAD; ++i)
     {
+        g_ThreadParams[i].m_ThreadIndex = i;
         g_WorkerThread[i].SetThreadParam(&g_ThreadParams[i]);
         g_WorkerThread[i].Start();
     }
@@ -58,14 +61,50 @@ int main ()
 
     PrepareSignalHandlers();
 
-    int listenSock = socket(AF_INET, SOCK_STREAM, 0);
+    int listenSock = PrepareSocket(NULL, true);
     if (listenSock == -1)
     {
-        handle_error("Failed to create socket.\n");
+        handle_error("Failed to create socket!\n");
     }
 
     CreateThreadPool();
 
+    struct sockaddr peer_addr;
+    socklen_t peer_addr_size;
+    peer_addr_size = sizeof(struct sockaddr);
+    while (true)
+    {
+        int clientSock = accept(listenSock,  &peer_addr,  &peer_addr_size);
+        if (clientSock != -1)
+        {
+            // Just loop to find a free thread
+            // TODO: Keep all free ones into a list!
+            ThreadParams* param = NULL;
+            for (int i = 0; i < MAX_WORK_THREAD; ++i)
+            {
+                if (!g_ThreadParams[i].m_busy)
+                {
+                    param = &g_ThreadParams[i];
+                    break;
+                }
+            }
+            if (param)
+            {
+                param->m_busy = true; // TODO: use CAS;
+                param->m_sock = clientSock;
+                param->Unlock(); // Unlock to make thread execute.
+            }
+            else // TODO: Notify user that we are busy.
+            {
+                close(clientSock);
+            }
+        }
+        else
+        {
+            perror("accept");
+            continue;
+        }
+    }
     sleep(1000);
 #if 0
     //  Prepare our context and sockets

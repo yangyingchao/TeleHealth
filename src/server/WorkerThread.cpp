@@ -23,6 +23,7 @@ int ThreadParams::Lock()
 /* See description in header file. */
 int ThreadParams::Unlock()
 {
+    PDEBUG ("%p unlocking ..\n", this);
     return pthread_mutex_unlock(&m_lock);
 }
 
@@ -73,6 +74,13 @@ void*  WorkerThread::StaticThreadFunction(void* arg)
 }
 
 /* See description in header file. */
+void WorkerThread::SetThreadParam(ThreadParams* param)
+{
+    m_param = param;
+}
+
+
+/* See description in header file. */
 void WorkerThread::DoRealWorks()
 {
     PDEBUG ("enter\n");
@@ -86,11 +94,8 @@ void WorkerThread::DoRealWorks()
         PDEBUG ("Thread %lu is working...\n", TID2ULONG(m_tid));
 
         // XXX: Do something.
-    }
-}
 
-/* See description in header file. */
-void WorkerThread::SetThreadParam(ThreadParams* param)
-{
-    m_param = param;
+        // At last, lock it!
+        m_param->Lock();
+    }
 }
