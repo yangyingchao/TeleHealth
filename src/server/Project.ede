@@ -11,8 +11,13 @@
     :auxsource '("DBThread.h" "Thread.h" "GenericWorkThread.h" "WorkerThread.h")
     :configuration-variables 'nil
     )
+   (ede-proj-target-makefile-program "test"
+    :name "test"
+    :path ""
+    :source '("TestServer.cpp")
+    )
    )
   :makefile-type 'Makefile.am
   :variables '(("AM_LDFLAGS" . "-lprotobuf -lz  -lzmq -pthread -lthpub -L../public -lsqlite3") ("AM_CPPFLAGS" . "-I../public -I../public/Generated"))
-  :configuration-variables 'nil
+  :configuration-variables '(("debug" ("AM_CPPFLAGS" . "-DDEBUG")))
   )

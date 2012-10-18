@@ -12,6 +12,7 @@ public:
     int Unlock();
 
     pthread_mutex_t m_lock;
+    pthread_cond_t  m_cond;
     int  m_sock;
     bool m_busy;
     int  m_ThreadIndex;

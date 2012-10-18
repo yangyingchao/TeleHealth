@@ -58,8 +58,13 @@ void PrepareSignalHandlers()
 
 int main ()
 {
+    PDEBUG ("0\n");
+    printf("aaa");
+    fflush(stdout);
 
     PrepareSignalHandlers();
+
+    PDEBUG ("1\n");
 
     int listenSock = PrepareSocket(NULL, true);
     if (listenSock == -1)
@@ -67,7 +72,11 @@ int main ()
         handle_error("Failed to create socket!\n");
     }
 
+    PDEBUG ("2\n");
+
     CreateThreadPool();
+
+    PDEBUG ("3.\n");
 
     struct sockaddr peer_addr;
     socklen_t peer_addr_size;

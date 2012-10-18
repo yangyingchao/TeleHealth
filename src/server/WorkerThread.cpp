@@ -5,6 +5,7 @@ ThreadParams::ThreadParams()
 {
     // XXX: Just assume new will always succeed, overwrite new operator someday.
     pthread_mutex_init(&m_lock, NULL);
+    pthread_cond_init(&m_cond,  NULL);
     Lock();
 }
 
@@ -17,16 +18,27 @@ ThreadParams::~ThreadParams()
 /* See description in header file. */
 int ThreadParams::Lock()
 {
-    return pthread_mutex_lock(&m_lock);
+    int ret = pthread_mutex_lock(&m_lock);
+    if (ret == 0)
+    {
+        ret = pthread_cond_wait(&m_cond, &m_lock);
+        ret = pthread_mutex_unlock(&m_lock);
+    }
+    return ret;
 }
 
 /* See description in header file. */
 int ThreadParams::Unlock()
 {
     PDEBUG ("%p unlocking ..\n", this);
-    return pthread_mutex_unlock(&m_lock);
+    int ret = pthread_mutex_lock(&m_lock);
+    if (ret == 0)
+    {
+        ret = pthread_cond_signal(&m_cond);
+        pthread_mutex_unlock(&m_lock);
+    }
+    return ret;
 }
-
 
 
 /* See description in header file. */
@@ -94,8 +106,5 @@ void WorkerThread::DoRealWorks()
         PDEBUG ("Thread %lu is working...\n", TID2ULONG(m_tid));
 
         // XXX: Do something.
-
-        // At last, lock it!
-        m_param->Lock();
     }
 }
