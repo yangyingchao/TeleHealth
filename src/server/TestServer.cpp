@@ -28,14 +28,15 @@ main(int argc, char *argv[])
     int sock = PrepareSocket("localhost", false);
     if (sock == -1)
     {
-        handle_error("Failed to open socket!\n");
+        printf("Failed to open socket!\n");
     }
 
     /* Send remaining command-line arguments as separate
        datagrams, and read responses from server */
 
-    for (j = 2; j < argc; j++)
+    for (j = 1; j < argc; j++)
     {
+        printf("Sending  msg: %d\n", j-1);
         len = strlen(argv[j]) + 1;
         /* +1 for terminating null byte */
 
@@ -45,12 +46,13 @@ main(int argc, char *argv[])
             continue;
         }
 
-        if (write(sfd, argv[j], len) != len) {
-            fprintf(stderr, "partial/failed write\n");
+        int n = write(sock, argv[j], len);
+        if (n != len) {
+            perror("partial/failed write\n");
             exit(EXIT_FAILURE);
         }
 
-        nread = read(sfd, buf, BUF_SIZE);
+        nread = read(sock, buf, BUF_SIZE);
         if (nread == -1) {
             perror("read");
             exit(EXIT_FAILURE);

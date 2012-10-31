@@ -8,8 +8,8 @@ class ThreadParams
 public:
     ThreadParams();
     virtual ~ThreadParams();
-    int Lock();
-    int Unlock();
+    int WaitForAction();
+    int SignalAction();
 
     pthread_mutex_t m_lock;
     pthread_cond_t  m_cond;

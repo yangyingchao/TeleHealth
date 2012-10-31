@@ -1,4 +1,7 @@
 #include "WorkerThread.h"
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* See description in header file. */
 ThreadParams::ThreadParams()
@@ -6,7 +9,6 @@ ThreadParams::ThreadParams()
     // XXX: Just assume new will always succeed, overwrite new operator someday.
     pthread_mutex_init(&m_lock, NULL);
     pthread_cond_init(&m_cond,  NULL);
-    Lock();
 }
 
 /* See description in header file. */
@@ -16,24 +18,27 @@ ThreadParams::~ThreadParams()
 
 
 /* See description in header file. */
-int ThreadParams::Lock()
+int ThreadParams::WaitForAction()
 {
     int ret = pthread_mutex_lock(&m_lock);
     if (ret == 0)
     {
         ret = pthread_cond_wait(&m_cond, &m_lock);
+        PDEBUG ("signal received ....\n");
         ret = pthread_mutex_unlock(&m_lock);
     }
+    PDEBUG ("return: %d\n", ret);
     return ret;
 }
 
 /* See description in header file. */
-int ThreadParams::Unlock()
+int ThreadParams::SignalAction()
 {
     PDEBUG ("%p unlocking ..\n", this);
     int ret = pthread_mutex_lock(&m_lock);
     if (ret == 0)
     {
+        PDEBUG ("ok, signalling....\n");
         ret = pthread_cond_signal(&m_cond);
         pthread_mutex_unlock(&m_lock);
     }
@@ -95,16 +100,34 @@ void WorkerThread::SetThreadParam(ThreadParams* param)
 /* See description in header file. */
 void WorkerThread::DoRealWorks()
 {
-    PDEBUG ("enter\n");
     while (!m_stop)
     {
-        int ret = m_param->Lock();
-        if (!ret)
+        int ret = m_param->WaitForAction();
+        if (ret)
         {
             continue;
         }
         PDEBUG ("Thread %lu is working...\n", TID2ULONG(m_tid));
 
+        int sock = m_param->m_sock;
         // XXX: Do something.
+        // Just echo:
+        PDEBUG ("sock: %d\n", sock);
+        char buff[256];
+
+        do
+        {
+            memset(buff, 0, 256);
+
+            int n = read(sock, buff, 256);
+            if (n == -1)
+            {
+                m_param->m_busy = false;
+                close(sock);
+                continue;
+            }
+            printf("%p received: %s\n", this, buff);
+            write(sock, "I know", 5);
+        } while (1);
     }
 }

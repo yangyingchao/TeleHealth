@@ -58,10 +58,6 @@ void PrepareSignalHandlers()
 
 int main ()
 {
-    PDEBUG ("0\n");
-    printf("aaa");
-    fflush(stdout);
-
     PrepareSignalHandlers();
 
     PDEBUG ("1\n");
@@ -101,7 +97,7 @@ int main ()
             {
                 param->m_busy = true; // TODO: use CAS;
                 param->m_sock = clientSock;
-                param->Unlock(); // Unlock to make thread execute.
+                param->SignalAction(); // Unlock to make thread execute.
             }
             else // TODO: Notify user that we are busy.
             {
@@ -145,5 +141,6 @@ int main ()
 #endif
 
     CleanupThreadPool();
+
     return 0;
 }

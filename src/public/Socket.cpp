@@ -36,8 +36,16 @@ int PrepareSocket(const char* host, bool forListen)
                 continue;
             }
 
-            ret = bind(sock, rp->ai_addr, rp->ai_addrlen);
-            ret = ret ? ret : listen(sock, BACK_LOG);
+            if (forListen)
+            {
+                ret = bind(sock, rp->ai_addr, rp->ai_addrlen);
+                ret = ret ? ret : listen(sock, BACK_LOG);
+            }
+            else
+            {
+                ret = connect(sock, rp->ai_addr, rp->ai_addrlen);
+            }
+
             if (ret == 0)            /* Success */
             {
                 break;
