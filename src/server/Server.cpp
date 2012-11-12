@@ -22,31 +22,24 @@ using namespace tr1;
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
-ThreadParams g_ThreadParams[MAX_WORK_THREAD];
-WorkerThread g_WorkerThread[MAX_WORK_THREAD];
-
-void CreateThreadPool()
-{
-    for (int i = 0; i < MAX_WORK_THREAD; ++i)
-    {
-        g_ThreadParams[i].m_ThreadIndex = i;
-        g_WorkerThread[i].SetThreadParam(&g_ThreadParams[i]);
-        g_WorkerThread[i].Start();
-    }
-}
+static ThreadPool* poolInstance = NULL;
 
 void CleanupThreadPool()
 {
-    for (int i = 0; i < MAX_WORK_THREAD; ++i)
+    if (poolInstance)
     {
-        g_WorkerThread[i].Suicide();
+        poolInstance->CleanUp();
     }
 }
+
+
 
 void SigActionForKill(int sig)
 {
     PDEBUG ("enter\n");
+
     CleanupThreadPool();
+
     sleep(10);
     exit(1);
 }
@@ -70,7 +63,12 @@ int main ()
 
     PDEBUG ("2\n");
 
-    CreateThreadPool();
+    poolInstance = ThreadPool::GetInstance();
+
+    if (!poolInstance)
+    {
+        handle_error("Failed to create ThreadPool!\n");
+    }
 
     PDEBUG ("3.\n");
 
@@ -84,18 +82,9 @@ int main ()
         {
             // Just loop to find a free thread
             // TODO: Keep all free ones into a list!
-            ThreadParams* param = NULL;
-            for (int i = 0; i < MAX_WORK_THREAD; ++i)
-            {
-                if (!g_ThreadParams[i].m_busy)
-                {
-                    param = &g_ThreadParams[i];
-                    break;
-                }
-            }
+            ThreadParam* param = poolInstance->BorrowThread();
             if (param)
             {
-                param->m_busy = true; // TODO: use CAS;
                 param->m_sock = clientSock;
                 param->SignalAction(); // Unlock to make thread execute.
             }
@@ -110,7 +99,7 @@ int main ()
             continue;
         }
     }
-    sleep(1000);
+
 #if 0
     //  Prepare our context and sockets
     zmq::context_t context (1);

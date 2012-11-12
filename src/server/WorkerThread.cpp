@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CAP_THREADS       256
+
 /* See description in header file. */
-ThreadParams::ThreadParams()
+ThreadParam::ThreadParam()
 {
     // XXX: Just assume new will always succeed, overwrite new operator someday.
     pthread_mutex_init(&m_lock, NULL);
@@ -12,13 +14,13 @@ ThreadParams::ThreadParams()
 }
 
 /* See description in header file. */
-ThreadParams::~ThreadParams()
+ThreadParam::~ThreadParam()
 {
 }
 
 
 /* See description in header file. */
-int ThreadParams::WaitForAction()
+int ThreadParam::WaitForAction()
 {
     int ret = pthread_mutex_lock(&m_lock);
     if (ret == 0)
@@ -32,7 +34,7 @@ int ThreadParams::WaitForAction()
 }
 
 /* See description in header file. */
-int ThreadParams::SignalAction()
+int ThreadParam::SignalAction()
 {
     PDEBUG ("%p unlocking ..\n", this);
     int ret = pthread_mutex_lock(&m_lock);
@@ -45,11 +47,11 @@ int ThreadParams::SignalAction()
     return ret;
 }
 
+// Implementation of WorkerThread
 
 /* See description in header file. */
 WorkerThread::WorkerThread()
-        : Thread(),
-          m_param(NULL)
+        : Thread()
 {
 }
 
@@ -58,19 +60,17 @@ WorkerThread::~WorkerThread()
 {
 }
 
+
 /* See description in header file. */
 bool WorkerThread::Start()
 {
     bool bRet = false;
-    if (m_param)
+    int ret = pthread_create(&m_tid, NULL,
+                             WorkerThread::StaticThreadFunction,
+                             (void*)this);
+    if (ret == 0)
     {
-        int ret = pthread_create(&m_tid, NULL,
-                                 WorkerThread::StaticThreadFunction,
-                                 (void*)this);
-        if (ret == 0)
-        {
-            bRet = true;
-        }
+        bRet = true;
     }
     return bRet;
 }
@@ -91,25 +91,18 @@ void*  WorkerThread::StaticThreadFunction(void* arg)
 }
 
 /* See description in header file. */
-void WorkerThread::SetThreadParam(ThreadParams* param)
-{
-    m_param = param;
-}
-
-
-/* See description in header file. */
 void WorkerThread::DoRealWorks()
 {
     while (!m_stop)
     {
-        int ret = m_param->WaitForAction();
+        int ret = m_param.WaitForAction();
         if (ret)
         {
             continue;
         }
         PDEBUG ("Thread %lu is working...\n", TID2ULONG(m_tid));
 
-        int sock = m_param->m_sock;
+        int sock = m_param.m_sock;
         // XXX: Do something.
         // Just echo:
         PDEBUG ("sock: %d\n", sock);
@@ -122,12 +115,94 @@ void WorkerThread::DoRealWorks()
             int n = read(sock, buff, 256);
             if (n == -1)
             {
-                m_param->m_busy = false;
+                m_param.m_busy = false;
                 close(sock);
-                continue;
+                if (m_pPool)
+                {
+                    m_pPool->ReturnThread(this);
+                }
+                PDEBUG ("Socket closed ...\n");
+                break;
             }
             printf("%p received: %s\n", this, buff);
             write(sock, "I know", 5);
         } while (1);
     }
 }
+
+// Implementation of ThreadPool
+
+ThreadPool* ThreadPool::m_instance = NULL;
+
+/* See description in header file. */
+ThreadPool::~ThreadPool()
+{
+    // TODO: Destroy objects here.
+}
+
+/* See description in header file. */
+ThreadPool*  ThreadPool::GetInstance()
+{
+    if (!m_instance)
+    {
+        m_instance = new ThreadPool();
+    }
+    return m_instance;
+}
+
+/* See description in header file. */
+ThreadParam*  ThreadPool::BorrowThread()
+{
+    //TODO: lock??
+    ThreadParam* param= NULL;
+    if (!m_freeList.empty())
+    {
+        WorkerThread* thread = m_freeList.top();
+        param = &thread->m_param;
+        param->m_busy = true;
+        m_freeList.pop();
+    }
+
+    return param;
+}
+
+/* See description in header file. */
+void ThreadPool::ReturnThread(WorkerThread* thread)
+{
+    //TODO: lock??
+    if (thread)
+    {
+        m_freeList.push(thread);
+    }
+}
+
+/* See description in header file. */
+ThreadPool::ThreadPool()
+{
+    // TODO: Handle exception of new operator.
+    m_threads = new WorkerThread[CAP_THREADS];
+    if (m_threads)
+    {
+        WorkerThread* thread = m_threads;
+        for (int i = 0; i < CAP_THREADS; ++i, ++thread)
+        {
+            thread->SetThreadPool(this);
+            m_freeList.push(thread);
+            thread->Start();
+        }
+    }
+}
+
+/* See description in header file. */
+void WorkerThread::SetThreadPool(ThreadPool* pool)
+{
+    m_pPool = pool;
+}
+
+/* See description in header file. */
+void ThreadPool::CleanUp()
+{
+}
+
+
+

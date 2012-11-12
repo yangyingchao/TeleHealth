@@ -2,12 +2,15 @@
 #define _WORKERTHREAD_H_
 
 #include "Thread.h"
+#include <stack>
 
-class ThreadParams
+using namespace std;
+
+class ThreadParam
 {
 public:
-    ThreadParams();
-    virtual ~ThreadParams();
+    ThreadParam();
+    virtual ~ThreadParam();
     int WaitForAction();
     int SignalAction();
 
@@ -18,22 +21,48 @@ public:
     int  m_ThreadIndex;
 };
 
+class ThreadPool;
 
 class WorkerThread : public Thread
 {
 public:
+    friend class ThreadPool;
+
     WorkerThread();
     virtual ~WorkerThread();
 
     virtual bool Start();
-    void SetThreadParam(ThreadParams* param);
 
+protected:
+    ThreadParam m_param;
+    void SetThreadPool(ThreadPool* pool);
 
 private:
     static void* StaticThreadFunction(void* arg);
     void DoRealWorks();
+    ThreadPool* m_pPool;
 
-    ThreadParams* m_param;
+};
+
+class ThreadPool
+{
+public:
+    virtual ~ThreadPool();
+
+    static ThreadPool* GetInstance();
+
+    ThreadParam* BorrowThread();
+    void ReturnThread(WorkerThread* thread);
+
+    void CleanUp();
+
+private:
+    ThreadPool();
+
+    static ThreadPool* m_instance;
+
+    stack<WorkerThread*> m_freeList;
+    WorkerThread* m_threads;
 };
 
 #endif /* _WORKERTHREAD_H_ */
