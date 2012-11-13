@@ -12,6 +12,7 @@
 #include "GenericWorkThread.h"
 #include "WorkerThread.h"
 #include "Socket.h"
+#include "ThreadPool.h"
 
 using namespace std;
 using namespace tr1;
@@ -53,15 +54,7 @@ int main ()
 {
     PrepareSignalHandlers();
 
-    PDEBUG ("1\n");
-
-    int listenSock = PrepareSocket(NULL, true);
-    if (listenSock == -1)
-    {
-        handle_error("Failed to create socket!\n");
-    }
-
-    PDEBUG ("2\n");
+    PDEBUG ("1. Prepare ThreadPool ... \n");
 
     poolInstance = ThreadPool::GetInstance();
 
@@ -70,18 +63,22 @@ int main ()
         handle_error("Failed to create ThreadPool!\n");
     }
 
-    PDEBUG ("3.\n");
 
-    struct sockaddr peer_addr;
-    socklen_t peer_addr_size;
-    peer_addr_size = sizeof(struct sockaddr);
+    PDEBUG ("2. Prepare listening socket ...\n");
+
+    Socket* listenSock = Socket::CreateSocket(ST_TCP, NULL, true);
+    if (!listenSock)
+    {
+        handle_error("Failed to create socket!\n");
+    }
+
+    PDEBUG ("3. Accepting connections ... \n");
+
     while (true)
     {
-        int clientSock = accept(listenSock,  &peer_addr,  &peer_addr_size);
-        if (clientSock != -1)
+        Socket* clientSock = listenSock->Accept();
+        if (clientSock)
         {
-            // Just loop to find a free thread
-            // TODO: Keep all free ones into a list!
             ThreadParam* param = poolInstance->BorrowThread();
             if (param)
             {
@@ -90,7 +87,7 @@ int main ()
             }
             else // TODO: Notify user that we are busy.
             {
-                close(clientSock);
+                clientSock->Close();
             }
         }
         else

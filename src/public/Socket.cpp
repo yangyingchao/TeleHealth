@@ -1,68 +1,50 @@
-#include "Socket.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <netdb.h>
+#include "SocketImplementation.h"
+#include "THMessage.pb.h"
 
+// Implementation of Socket.
 
-#define BACK_LOG       4096
-
-int PrepareSocket(const char* host, bool forListen)
+/* See description in header file. */
+Socket::Socket()
+        : m_socket(-1),
+          m_type(ST_INVALID)
 {
-    int sock = -1;
+}
 
-    struct addrinfo  hints;
-    struct addrinfo* result = NULL;
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;     /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_STREAM; /* Datagram socket */
-    hints.ai_flags = forListen ? AI_PASSIVE : 0;     /* For wildcard IP address */
-    hints.ai_protocol = 0;           /* Any protocol */
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
+/* See description in header file. */
+Socket::~Socket()
+{
+}
 
-    int ret = getaddrinfo(host, SERVER_PORT, &hints, &result);
-    if (ret == 0)
+/* See description in header file. */
+Socket*  Socket::CreateSocket(SocketType type, const char* host, bool forListen)
+{
+    Socket* sock = NULL;
+
+    switch (type)
     {
-        struct addrinfo* rp = result;
-        for (; rp != NULL; rp = rp->ai_next)
+        case ST_TCP:
         {
-            sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-            if (sock == -1)
+            sock = new SocketTcp(host, forListen);
+            if (sock->m_socket == -1)
             {
-                continue;
+                delete sock;
+                sock = NULL;
             }
-
-            if (forListen)
-            {
-                ret = bind(sock, rp->ai_addr, rp->ai_addrlen);
-                ret = ret ? ret : listen(sock, BACK_LOG);
-            }
-            else
-            {
-                ret = connect(sock, rp->ai_addr, rp->ai_addrlen);
-            }
-
-            if (ret == 0)            /* Success */
-            {
-                break;
-            }
-            else
-            {
-                close(sock);
-            }
+            break;
         }
 
-        freeaddrinfo(result);
-
-        if (!rp)
+        // Not implemented for now.
+        case ST_UDP:
         {
-            sock = -1;
+            break;
+        }
+        default:
+        {
+            break;
         }
     }
 
     return sock;
 }
+
+

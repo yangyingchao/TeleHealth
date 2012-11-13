@@ -48,6 +48,7 @@ cscope.*
 libtool
 modules.builtin
 ncscope.*
-src/wcmd
 stamp-h
 stamp-h1
+src/server/server
+src/server/test

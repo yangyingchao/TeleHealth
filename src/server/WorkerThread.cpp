@@ -2,8 +2,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ThreadPool.h"
 
-#define CAP_THREADS       256
+#include "THMessage.pb.h"
 
 /* See description in header file. */
 ThreadParam::ThreadParam()
@@ -100,23 +101,22 @@ void WorkerThread::DoRealWorks()
         {
             continue;
         }
-        PDEBUG ("Thread %lu is working...\n", TID2ULONG(m_tid));
+        // PDEBUG ("Thread %lu is working...\n", TID2ULONG(m_tid));
+        PDEBUG ("Thread %p is working...\n", this);
 
-        int sock = m_param.m_sock;
-        // XXX: Do something.
-        // Just echo:
-        PDEBUG ("sock: %d\n", sock);
-        char buff[256];
-
-        do
+        Socket* sock = m_param.m_sock;
+        if (!sock)
         {
-            memset(buff, 0, 256);
+            continue;
+        }
 
-            int n = read(sock, buff, 256);
-            if (n == -1)
+        while (true)
+        {
+            shared_ptr<Message> msg = sock->Receive();
+            if (!msg)
             {
                 m_param.m_busy = false;
-                close(sock);
+                sock->Close();
                 if (m_pPool)
                 {
                     m_pPool->ReturnThread(this);
@@ -124,71 +124,12 @@ void WorkerThread::DoRealWorks()
                 PDEBUG ("Socket closed ...\n");
                 break;
             }
-            printf("%p received: %s\n", this, buff);
-            write(sock, "I know", 5);
-        } while (1);
-    }
-}
 
-// Implementation of ThreadPool
+            // TODO: Add real work here.
+            MessagePtr rsp = HandleRequest(msg);
 
-ThreadPool* ThreadPool::m_instance = NULL;
-
-/* See description in header file. */
-ThreadPool::~ThreadPool()
-{
-    // TODO: Destroy objects here.
-}
-
-/* See description in header file. */
-ThreadPool*  ThreadPool::GetInstance()
-{
-    if (!m_instance)
-    {
-        m_instance = new ThreadPool();
-    }
-    return m_instance;
-}
-
-/* See description in header file. */
-ThreadParam*  ThreadPool::BorrowThread()
-{
-    //TODO: lock??
-    ThreadParam* param= NULL;
-    if (!m_freeList.empty())
-    {
-        WorkerThread* thread = m_freeList.top();
-        param = &thread->m_param;
-        param->m_busy = true;
-        m_freeList.pop();
-    }
-
-    return param;
-}
-
-/* See description in header file. */
-void ThreadPool::ReturnThread(WorkerThread* thread)
-{
-    //TODO: lock??
-    if (thread)
-    {
-        m_freeList.push(thread);
-    }
-}
-
-/* See description in header file. */
-ThreadPool::ThreadPool()
-{
-    // TODO: Handle exception of new operator.
-    m_threads = new WorkerThread[CAP_THREADS];
-    if (m_threads)
-    {
-        WorkerThread* thread = m_threads;
-        for (int i = 0; i < CAP_THREADS; ++i, ++thread)
-        {
-            thread->SetThreadPool(this);
-            m_freeList.push(thread);
-            thread->Start();
+            // Send it back to client;
+            int n = sock->Send(rsp);
         }
     }
 }
@@ -200,8 +141,13 @@ void WorkerThread::SetThreadPool(ThreadPool* pool)
 }
 
 /* See description in header file. */
-void ThreadPool::CleanUp()
+MessagePtr WorkerThread::HandleRequest(const MessagePtr& reqest)
 {
+    MessagePtr rsp;
+
+    // XXX: Implement this!!
+
+    return rsp;
 }
 
 

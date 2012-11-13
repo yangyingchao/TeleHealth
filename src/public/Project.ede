@@ -7,8 +7,8 @@
    (ede-proj-target-makefile-shared-object "thpub"
     :name "thpub"
     :path ""
-    :source '("DataBase.h" "StringUtils.hpp" "DataBase/DataBase.cpp" "Generated/MessageHeader.pb.cc" "Generated/MessageHeader.pb.h" "Generated/THMessage.pb.cc" "Generated/THMessage.pb.h" "DataBase/DataBaseSqlite.cpp" "DataBase/DataBaseSqlite.h" "DataBase/TableComponent.cpp" "DataBase/TableComponent.h" "Utils.cpp" "Generated/DBTables.pb.cc" "Generated/DBTables.pb.h" "Socket.cpp")
-    :auxsource '("LogUtils.h" "Utils.h" "units.h" "SmartPointer.h" "ZmqWrapper.h" "Thread.h" "Socket.h")
+    :source '("DataBase.h" "StringUtils.hpp" "DataBase/DataBase.cpp" "Generated/MessageHeader.pb.cc" "Generated/MessageHeader.pb.h" "Generated/THMessage.pb.cc" "Generated/THMessage.pb.h" "DataBase/DataBaseSqlite.cpp" "DataBase/DataBaseSqlite.h" "DataBase/TableComponent.cpp" "DataBase/TableComponent.h" "Utils.cpp" "Generated/DBTables.pb.cc" "Generated/DBTables.pb.h" "Socket.cpp" "SocketImplementation.cpp")
+    :auxsource '("LogUtils.h" "Utils.h" "units.h" "SmartPointer.h" "ZmqWrapper.h" "Thread.h" "Socket.h" "MessageBase.h" "typedefs.h" "SocketImplementation.h")
     :configuration-variables 'nil
     )
    )
