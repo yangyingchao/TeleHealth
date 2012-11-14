@@ -77,6 +77,50 @@ SocketTcp::~SocketTcp()
 /* See description in header file. */
 int SocketTcp::Send(const MessagePtr& msg)
 {
+    TcpMessage tMsg(msg);
+
+    while (true)
+    {
+        switch (tMsg.m_state)
+        {
+            case TMS_Invalid: // Invalid message, just return;
+            {
+                return -1;
+            }
+            case TMS_Ready: // Ready, begin to send header.
+            {
+                if (SendProc(&tMsg.m_header, HEADER_LENGTH))  // Finished to send Header
+                {
+                    tMsg.m_state = TMS_S_H;
+                }
+                else
+                {
+                    return -1;
+                }
+                break;
+            }
+            case TMS_S_H: // Header is sent, now send Body
+            {
+                if (SendProc(tMsg.m_body, tMsg.m_bodySize))
+                {
+                    tMsg.m_state = TMS_F;
+                }
+                else
+                {
+                    return -1;
+                }
+                break;
+            }
+            case TMS_F:
+            {
+                return 0;
+            }
+            default:
+            {
+                break;
+            }
+        }
+    }
     return 0;
 }
 
@@ -87,9 +131,51 @@ MessagePtr SocketTcp::Receive()
     return msg;
 }
 
+
+/* See description in header file. */
+bool SocketTcp::SendProc(void* buff, size_t length)
+{
+    bool result = true;
+    if (buff)
+    {
+        size_t expected = length;
+        size_t sent     = 0;
+        unsigned char* ptr = (unsigned char*)buff;
+        while (true)
+        {
+            sent = send(m_socket, ptr, expected, 0);
+            if (sent != -1)
+            {
+                expected -= sent;
+                if (!expected) // Finished Sending.
+                {
+                    break;
+                }
+
+                ptr+= sent;
+            }
+            else // Failed to send msg.
+            {
+                result = false;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+/* See description in header file. */
+bool SocketTcp::RecvProc()
+{
+}
+
+
 /* See description in header file. */
 Socket*  SocketTcp::Accept()
 {
+
+    //TODO: Check sock type before accept!!
     SocketTcp* acceptedSock = NULL;
     struct sockaddr peer_addr;
     socklen_t peer_addr_size;
@@ -117,4 +203,41 @@ void SocketTcp::Close()
 /* See description in header file. */
 SocketTcp::SocketTcp()
 {
+}
+
+/* See description in header file. */
+TcpMessage::TcpMessage(MessagePtr message)
+        : m_message(message),
+          m_state(TMS_Ready),
+          m_body(NULL)
+{
+    memset(&m_header, 0, sizeof(m_header));
+    if (message)
+    {
+        m_header.data_size = message->ByteSize();
+        m_bodySize = m_header.data_size;
+        if (m_header.data_size)
+        {
+            m_body = malloc(m_bodySize);
+            memset(m_body, 0, m_bodySize);
+
+            if (m_message->SerializeToArray(m_body, m_bodySize))
+            {
+                if (m_body)
+                {
+                    free(m_body);
+                }
+                m_state = TMS_Invalid;
+            }
+        }
+    }
+}
+
+/* See description in header file. */
+TcpMessage::~TcpMessage()
+{
+    if (m_body)
+    {
+        free(m_body);
+    }
 }
