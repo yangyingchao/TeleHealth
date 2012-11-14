@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-
+#include "StringUtils.hpp"
 #include "THMessage.pb.h"
 
 #define handle_error(msg) \
@@ -38,9 +38,28 @@ main(int argc, char *argv[])
 
     for (j = 1; j < argc; j++)
     {
+
+        MessagePtr msg(new Message);
+        MessageHeader* header = msg->mutable_header();
+        header->set_version("20120730");
+        header->set_length(1024);
+        if (j%2 == 0)
+        {
+            header->set_type(Plain);
+        }
+        else
+        {
+            header->set_type(Invalid);
+        }
+        header->set_session_id(string(""));
+
+        msg->set_data(string("Message from client, counter: ") +
+                      StringUtils::Number2String(j) + argv[j]);
+
+        assert(msg->has_header());
+
         printf("Sending  msg: %d\n", j-1);
 
-        MessagePtr msg;
         sock->Send(msg);
         msg = sock->Receive();
         printf("Received ...\n");

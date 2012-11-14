@@ -3,6 +3,8 @@
 
 #include "typedefs.h"
 
+const uint8 TMP_FLAG = 1;
+
 typedef struct _msg_header
 {
     uint8  type;

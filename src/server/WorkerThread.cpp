@@ -4,6 +4,8 @@
 #include <string.h>
 #include "ThreadPool.h"
 
+#include <iostream>
+
 #include "THMessage.pb.h"
 
 /* See description in header file. */
@@ -141,10 +143,15 @@ void WorkerThread::SetThreadPool(ThreadPool* pool)
 }
 
 /* See description in header file. */
-MessagePtr WorkerThread::HandleRequest(const MessagePtr& reqest)
+MessagePtr WorkerThread::HandleRequest(const MessagePtr& request)
 {
     MessagePtr rsp;
 
+    if (request && request->has_data())
+    {
+        cout << "**********\t\tReceived data: "
+             << request->data().c_str() << endl;
+    }
     // XXX: Implement this!!
 
     return rsp;

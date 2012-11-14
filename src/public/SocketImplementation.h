@@ -21,7 +21,7 @@ public:
 
 private:
     bool SendProc(void* buff, size_t length);
-    bool RecvProc();
+    bool RecvProc(void* buff, size_t length);
     struct sockaddr m_addr;
 };
 
@@ -43,14 +43,23 @@ public:
     friend class SocketTcp;
 
     TcpMessage(MessagePtr message);
+    TcpMessage();
     virtual ~TcpMessage();
+
+    bool ParseHeader();
+    bool ParseBody();
 
 protected:
     MessagePtr      m_message;
     TcpMessageState m_state;
+
     msg_header      m_header;
     void*           m_body;
     size_t          m_bodySize;
+
+private:
+    bool PrepareSpace(size_t size);
+
 };
 
 #endif /* _SOCKETIMPLEMENTATION_H_ */

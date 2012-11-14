@@ -7,7 +7,12 @@
 #include <string.h>
 #include <netdb.h>
 
+#define DEBUG
+
+#include "LogUtils.h"
+
 #define BACK_LOG       4096
+
 
 // Implementation of SockTcp
 
@@ -85,18 +90,17 @@ int SocketTcp::Send(const MessagePtr& msg)
         {
             case TMS_Invalid: // Invalid message, just return;
             {
-                return -1;
+                goto error;
             }
             case TMS_Ready: // Ready, begin to send header.
             {
-                if (SendProc(&tMsg.m_header, HEADER_LENGTH))  // Finished to send Header
+                if (!SendProc(&tMsg.m_header, HEADER_LENGTH))
                 {
-                    tMsg.m_state = TMS_S_H;
+                    goto error;
                 }
-                else
-                {
-                    return -1;
-                }
+
+                // Finished to send Header
+                tMsg.m_state = TMS_S_H;
                 break;
             }
             case TMS_S_H: // Header is sent, now send Body
@@ -107,7 +111,7 @@ int SocketTcp::Send(const MessagePtr& msg)
                 }
                 else
                 {
-                    return -1;
+                    goto error;
                 }
                 break;
             }
@@ -117,18 +121,67 @@ int SocketTcp::Send(const MessagePtr& msg)
             }
             default:
             {
+                PDEBUG ("Unexpected state: %d\n", tMsg.m_state);
                 break;
             }
         }
     }
     return 0;
+error:
+    return -1;
 }
 
 /* See description in header file. */
 MessagePtr SocketTcp::Receive()
 {
-    MessagePtr msg;
-    return msg;
+    TcpMessage tMsg;
+    while (true)
+    {
+        switch (tMsg.m_state)
+        {
+            case TMS_Invalid:
+            {
+                goto error;
+            }
+            case TMS_Ready:
+            {
+                if (!RecvProc(&tMsg.m_header, HEADER_LENGTH))
+                {
+                    goto error;
+                }
+
+                tMsg.m_state = TMS_R_H;
+                break;
+            }
+            case TMS_R_H: // Header received.
+            {
+                if (!tMsg.ParseHeader() || !RecvProc(tMsg.m_body, tMsg.m_bodySize))
+                {
+                    goto error;
+                }
+
+                tMsg.m_state = TMS_F;
+                break;
+            }
+            case TMS_F:
+            {
+                if (!tMsg.ParseBody())
+                {
+                    goto error;
+                }
+                goto ok;
+            }
+            default:
+            {
+                break;
+            }
+        }
+    }
+
+error:
+    tMsg.m_message.reset();
+ok:
+    return tMsg.m_message;
 }
 
 
@@ -166,8 +219,44 @@ bool SocketTcp::SendProc(void* buff, size_t length)
 }
 
 /* See description in header file. */
-bool SocketTcp::RecvProc()
+bool SocketTcp::RecvProc(void* buff, size_t length)
 {
+    bool result = false;
+    if (buff)
+    {
+        size_t expected = length;
+        size_t received = 0;
+        unsigned char* ptr = (unsigned char*)buff;
+        while (true)
+        {
+            received = recv(m_socket, ptr, expected, 0);
+            if (received != -1 && received != 0)
+            {
+                expected -= received;
+                if (!expected) // Finished Sending.
+                {
+                    result = true;
+                    break;
+                }
+
+                ptr+= received;
+            }
+            else // Failed to send msg.
+            {
+                break;
+            }
+        }
+    }
+    else if (!buff && !length)
+    {
+        result = true;
+    }
+
+    if (!result)
+    {
+        PDEBUG ("returing false!\n");
+    }
+    return result;
 }
 
 
@@ -209,9 +298,14 @@ SocketTcp::SocketTcp()
 TcpMessage::TcpMessage(MessagePtr message)
         : m_message(message),
           m_state(TMS_Ready),
+          m_bodySize(0),
           m_body(NULL)
 {
     memset(&m_header, 0, sizeof(m_header));
+
+    //XXX:
+    m_header.type = TMP_FLAG;
+
     if (message)
     {
         m_header.data_size = message->ByteSize();
@@ -221,11 +315,12 @@ TcpMessage::TcpMessage(MessagePtr message)
             m_body = malloc(m_bodySize);
             memset(m_body, 0, m_bodySize);
 
-            if (m_message->SerializeToArray(m_body, m_bodySize))
+            if (!m_message->SerializeToArray(m_body, m_bodySize))
             {
                 if (m_body)
                 {
                     free(m_body);
+                    m_body = NULL;
                 }
                 m_state = TMS_Invalid;
             }
@@ -241,3 +336,86 @@ TcpMessage::~TcpMessage()
         free(m_body);
     }
 }
+
+/* See description in header file. */
+TcpMessage::TcpMessage()
+        : m_message(),
+          m_state(TMS_Ready),
+          m_bodySize(0),
+          m_body(NULL)
+{
+    memset(&m_header, 0, sizeof(m_header));
+    //XXX:
+    m_header.type = TMP_FLAG;
+}
+
+/* See description in header file. */
+bool TcpMessage::PrepareSpace(size_t size)
+{
+    bool bRet = true;
+    if (size)
+    {
+        m_body = malloc(size);
+        if (m_body)
+        {
+            memset(m_body, 0, size);
+        }
+        else
+        {
+            bRet = false;
+        }
+    }
+    return bRet;
+}
+
+/* See description in header file. */
+bool TcpMessage::ParseHeader()
+{
+    bool bRet = false;
+    if (m_header.type == TMP_FLAG && !m_header.reserved[0] && !m_header.reserved[1] &&
+        !m_header.reserved[2])
+    {
+        bRet = true;
+        m_bodySize = m_header.data_size;
+        if (m_bodySize)
+        {
+            m_body = malloc(m_bodySize);
+            if (!m_body)
+            {
+                bRet = false;
+                goto ret;
+            }
+
+            memset(m_body, 0, m_bodySize);
+        }
+    }
+ret:
+    if (!bRet)
+    {
+        PDEBUG ("Returning false!\n");
+    }
+    return bRet;
+}
+
+/* See description in header file. */
+bool TcpMessage::ParseBody()
+{
+    bool bRet = true;
+    if (m_body && m_bodySize)
+    {
+        m_message.reset(new Message);
+        if (!m_message)
+        {
+            bRet = false;
+            goto ret;
+        }
+
+        bRet = m_message->ParseFromArray(m_body, m_bodySize);
+    }
+ret:
+    return bRet;
+}
+
+
+
+
