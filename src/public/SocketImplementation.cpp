@@ -303,7 +303,7 @@ TcpMessage::TcpMessage(MessagePtr message)
 {
     memset(&m_header, 0, sizeof(m_header));
 
-    //XXX:
+    //XXX: Replace TMP_FLAG with some filed from message.
     m_header.type = TMP_FLAG;
 
     if (message)
