@@ -1,13 +1,13 @@
 
 Someday, they will be added as sub module...
 
-**** ZeroMQ
-
-     [[http://zguide.zeromq.org/]]
-
 **** Google Protocol Buffer
 
      [[https://developers.google.com/protocol-buffers/]]
+
+**** Video/Audio
+
+     Will use telepath.
 
 
 * In Gentoo
