@@ -5,6 +5,8 @@ import sys
 import os
 import wx
 
+sys.path.append("../../public/generated/python")
+
 from eventids import *
 from UI_Panels import *
 

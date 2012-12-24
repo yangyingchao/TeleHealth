@@ -33,6 +33,35 @@ class UI_BasePanel(wx.Panel):
         pass
 
 
+class UI_SingleUserFrame(UI_BasePanel):
+    """
+    A mini frame to show single user's information
+    """
+
+    def __init__(self, parent, user):
+        """
+        Constructor
+        """
+        self.user = user
+
+        UI_BasePanel.__init__(self, parent)
+        pass
+
+    def Draw(self):
+        """
+        Create necessary widgets and fill into sizer.
+        """
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.label = wx.StaticText(self, -1, "Current User:%s"%self.user.name,
+                                   style=wx.ALIGN_CENTER)
+        self.label.SetBackgroundColour('Yellow')
+        self.sizer.Add(self.label, 0, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER, 5)
+
+        self.gridView = UI_SimpleGrid(self)
+        self.sizer.Add(self.gridView, 1, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER, 5)
+
+        self.SetSizerAndFit(self.sizer)
+        pass
 
 class UI_MainPanel(UI_BasePanel):
     """
@@ -50,7 +79,11 @@ class UI_MainPanel(UI_BasePanel):
         Create necessary widgets and fill into sizer.
         """
         self.sizer   = wx.BoxSizer(wx.VERTICAL)
+
+        #TODO: Replace this listCtrl with customized view.
         self.lstCtrl = UI_MainPanelListCtrl(self)
+        #TODO: Load external data here!
+        self.lstCtrl.LoadData(None)
         self.sizer.Add(self.lstCtrl, 1, wx.ALL, 5)
 
          # TODO: Add Images to buttons.
@@ -74,9 +107,6 @@ class UI_MainPanel(UI_BasePanel):
 
         self.SetSizerAndFit(self.sizer)
 
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.ListItemSelected, self.lstCtrl)
-
-
     def OnBtnAddClicked(self, evt):
         """
         Handling AddButton clicked.
@@ -95,7 +125,7 @@ class UI_MainPanel(UI_BasePanel):
         """
         print("OnBtnRemoveClicked called!\n",)
         print("OnBtnRemoveClicked called!\n")
-
+        pass
 
 
     def OnBtnOpenClicked(self, evt):
@@ -105,12 +135,26 @@ class UI_MainPanel(UI_BasePanel):
         - `evt`:
         """
         print("OnBtnOpenClicked called!\n")
+        #TODO: replace this mini-frame with a in-place panel.
+        user = self.lstCtrl.GetItemDataEnhanced()
+        if user is not None:
+            frame = UI_SingleUserFrame(self, user)
+            frame.Show()
+        pass
 
-    def ListItemSelected(self, idx):
+    #XXX: Callback functions called by its children
+    #TODO: Update parameters ...
+    def ListItemSelected(self, evt):
         """
         Notify that a list item is selected.
         Arguments:
         - `idx`: index of item.
         """
+
+        #TODO: Check if those buttons should be enabled or not.
         self.btnOpen.Enable(True)
-        print("ListItemSelected with ID: %d\n"%idx)
+        self.btnRemove.Enable(True)
+
+        print("ListItemSelected with ID: %d\n"%evt.GetIndex())
+
+        pass

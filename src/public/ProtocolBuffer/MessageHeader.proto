@@ -1,3 +1,4 @@
+// TODO: Remove this header!!!
 enum MessageType {
     Invalid  = 0;
 

@@ -1,11 +1,12 @@
-OUTDIR=../Generated
+OUTDIR=../generated/c
+PY_OUTDIR=../generated/python
 TARGETS=MessageHeader.proto THMessage.proto DBTables.proto
 
 default: all
 
 all: $(TARGETS)
 	protoc -I/--proto_path=$(OUTDIR) --proto_path=. --cpp_out=$(OUTDIR) $^
-	protoc -I/--proto_path=$(OUTDIR) --proto_path=. --python_out=$(OUTDIR) $^
+	protoc -I/--proto_path=$(OUTDIR) --proto_path=. --python_out=$(PY_OUTDIR) $^
 
 clean:
 	OLDDIR=$(PWD)
