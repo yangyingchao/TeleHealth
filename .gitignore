@@ -54,3 +54,4 @@ src/server/server
 src/server/test
 *.pyc
 *.pyo
+/src/test/test
