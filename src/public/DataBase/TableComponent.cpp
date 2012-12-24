@@ -96,7 +96,7 @@ void TableComponent::Initialize()
             EntryStruct* ptr = tbl.entries;
             while (ptr && ptr->type != ET_Invalid)
             {
-                PDEBUG ("entry name: %s\n", ptr->name.c_str());
+                // PDEBUG ("entry name: %s\n", ptr->name.c_str());
                 if (ptr->type != ET_Invalid)
                 {
                     lst.push_back(*ptr);

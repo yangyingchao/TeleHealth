@@ -19,9 +19,9 @@ typedef enum _EntryType
 
 typedef struct _EntryStruct
 {
-    string name;
-    EntryType   type;
-    bool        primary;
+    string    name;
+    EntryType type;
+    bool      primary;
 } EntryStruct;
 
 

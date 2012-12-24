@@ -1,8 +1,6 @@
 #include "DataBase.h"
 
-#include "DataBase.h"
 #include "DataBaseSqlite.h"
-
 DataBasePtr DataBaseFactory::GetInstance(DataBaseType type)
 {
     DataBasePtr db;

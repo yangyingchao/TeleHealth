@@ -1,6 +1,4 @@
 #include "DataBaseSqlite.h"
-
-#include "DataBaseSqlite.h"
 #include <string.h>
 #include "TableComponent.h"
 #include "SqliteKeywords.h"
