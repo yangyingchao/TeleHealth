@@ -11,10 +11,10 @@ AM_CPPFLAGS=-I../public -I../public/Generated
 top=../../
 ede_FILES=Project.ede Makefile.am
 
-SUBDIRS=
+SUBDIRS= 
 EXTRA_DIST=Project.ede
 bin_PROGRAMS=client
-client_SOURCES=ClientSample.cpp
+client_SOURCES=Client.cpp
 client_LDADD=
 
 # End of Makefile.am

@@ -3,11 +3,11 @@
 (ede-proj-project "client"
   :file "Project.ede"
   :name "client"
-  :targets (list
+  :targets (list 
    (ede-proj-target-makefile-program "client"
     :name "client"
     :path ""
-    :source '("ClientSample.cpp")
+    :source '("Client.cpp")
     :configuration-variables 'nil
     )
    )

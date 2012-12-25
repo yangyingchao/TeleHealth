@@ -99,12 +99,30 @@ class UI_SimpleGrid(gridlib.Grid):
 
         # self.Bind(wx.EVT_IDLE, self.OnIdle)
 
-        self.CreateGrid(25, 25)#, gridlib.Grid.SelectRows)
+        self.CreateGrid(25, 5)#, gridlib.Grid.SelectRows)
         ##self.EnableEditing(False)
 
         # simple cell formatting
         self.SetColSize(3, 200)
         self.SetRowSize(4, 45)
+
+        self.SetColLabelValue(0, "Custom")
+        self.SetColLabelValue(1, "column")
+        self.SetColLabelValue(2, "labels")
+
+        # attribute objects let you keep a set of formatting values
+        # in one spot, and reuse them if needed
+        attr = gridlib.GridCellAttr()
+        attr.SetTextColour(wx.BLACK)
+        attr.SetBackgroundColour(wx.RED)
+        attr.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
+
+        # you can set cell attributes for the whole row (or column)
+        self.SetRowAttr(5, attr)
+
+
+        self.SetColLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
+
         self.SetCellValue(0, 0, "First cell")
         self.SetCellValue(1, 1, "Another cell")
         self.SetCellValue(2, 2, "Yet another cell")
@@ -125,21 +143,6 @@ class UI_SimpleGrid(gridlib.Grid):
         #self.SetRowLabelSize(0)
         #self.SetColLabelSize(0)
 
-        # attribute objects let you keep a set of formatting values
-        # in one spot, and reuse them if needed
-        attr = gridlib.GridCellAttr()
-        attr.SetTextColour(wx.BLACK)
-        attr.SetBackgroundColour(wx.RED)
-        attr.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
-
-        # you can set cell attributes for the whole row (or column)
-        self.SetRowAttr(5, attr)
-
-        self.SetColLabelValue(0, "Custom")
-        self.SetColLabelValue(1, "column")
-        self.SetColLabelValue(2, "labels")
-
-        self.SetColLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_BOTTOM)
 
         #self.SetDefaultCellOverflow(False)
         #r = gridlib.GridCellAutoWrapStringRenderer()

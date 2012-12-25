@@ -9,7 +9,7 @@
 top=../
 ede_FILES=Project.ede Makefile.am
 
-SUBDIRS= test/ server/ public/ client/
+SUBDIRS= public/ client/ server/ test/
 EXTRA_DIST=Project.ede
 
 # End of Makefile.am

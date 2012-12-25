@@ -11,7 +11,7 @@ AM_CPPFLAGS=-DDEBUG -I../public -I../public/generated/c
 top=../../
 ede_FILES=Project.ede Makefile.am
 
-SUBDIRS=
+SUBDIRS= 
 EXTRA_DIST=Project.ede
 bin_PROGRAMS=server test
 server_SOURCES=Server.cpp DBThread.cpp GenericWorkThread.cpp WorkerThread.cpp ThreadPool.cpp
