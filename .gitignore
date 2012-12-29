@@ -37,8 +37,6 @@ GRTAGS
 GSYMS
 GTAGS
 Makefile
-Makefile.in
-\#*#
 \#*#
 autom4te.cache/
 config.h
@@ -55,3 +53,4 @@ src/server/test
 *.pyc
 *.pyo
 /src/test/test
+/src/client/client

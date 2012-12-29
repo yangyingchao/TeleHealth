@@ -3,7 +3,13 @@
 (ede-proj-project "protobuf"
   :file "Project.ede"
   :name "protobuf"
-  :targets (list
+  :targets (list 
+   (ede-proj-target-makefile-miscelaneous "distclean"
+    :name "distclean"
+    :path ""
+    :source '("Makefile.ByHand")
+    :submakefile "Makefile.ByHand"
+    )
    (ede-proj-target-makefile-miscelaneous "protobuf"
     :name "protobuf"
     :path ""

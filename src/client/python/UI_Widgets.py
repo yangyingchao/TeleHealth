@@ -99,16 +99,17 @@ class UI_SimpleGrid(gridlib.Grid):
 
         # self.Bind(wx.EVT_IDLE, self.OnIdle)
 
-        self.CreateGrid(25, 5)#, gridlib.Grid.SelectRows)
+        self.CreateGrid(18, 5)#, gridlib.Grid.SelectRows)
         ##self.EnableEditing(False)
 
         # simple cell formatting
         self.SetColSize(3, 200)
         self.SetRowSize(4, 45)
 
-        self.SetColLabelValue(0, "Custom")
-        self.SetColLabelValue(1, "column")
-        self.SetColLabelValue(2, "labels")
+        # TODO: Get and set column names from real data!
+        self.SetColLabelValue(0, "Date")
+        self.SetColLabelValue(1, "Height")
+        self.SetColLabelValue(2, "Weight")
 
         # attribute objects let you keep a set of formatting values
         # in one spot, and reuse them if needed
@@ -137,7 +138,6 @@ class UI_SimpleGrid(gridlib.Grid):
         self.SetCellEditor(6, 0, gridlib.GridCellFloatEditor())
         self.SetCellValue(6, 0, "123.34")
         self.SetCellEditor(7, 0, gridlib.GridCellNumberEditor())
-
         self.SetCellValue(6, 3, "You can veto editing this cell")
 
         #self.SetRowLabelSize(0)
@@ -160,10 +160,9 @@ class UI_SimpleGrid(gridlib.Grid):
         self.SetCellEditor(0, 4, editor)
         self.SetCellValue(0, 4, "Limited text")
 
-        renderer = gridlib.GridCellAutoWrapStringRenderer()
-        self.SetCellRenderer(15,0, renderer)
-        self.SetCellValue(15,0, "The text in this cell will be rendered with word-wrapping")
-
+        # renderer = gridlib.GridCellAutoWrapStringRenderer()
+        # self.SetCellRenderer(15,0, renderer)
+        # self.SetCellValue(15,0, "The text in this cell will be rendered with word-wrapping")
 
         # test all the events
         self.Bind(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnCellLeftClick)

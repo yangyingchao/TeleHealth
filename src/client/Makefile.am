@@ -6,7 +6,7 @@
 # http://cedet.sourceforge.net/ede.shtml
 #
 AM_LDFLAGS=-lprotobuf -lz  -lzmq -pthread -lthpub -L../public -lsqlite3
-AM_CPPFLAGS=-I../public -I../public/Generated
+AM_CPPFLAGS=-I../public -I../public/generated/c
 
 top=../../
 ede_FILES=Project.ede Makefile.am
