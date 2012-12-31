@@ -1,6 +1,38 @@
-import "MessageHeader.proto";
-
-message Message {
-    required MessageHeader      header = 1;
-    optional bytes      data = 4;
+// Message Header
+enum MessageType {
+    Invalid         = 0;
+    RegisterUserReq = 1;
+    RegisterUserRsp = 2;
+    Plain           = 1000;
 }
+
+message MessageHeader {
+    required MessageType type       = 1 [default = Invalid];
+    required uint32      length     = 2; // Length of data (not header.)
+    required string      version    = 3;
+    required string      session_id = 4; // Set it to empty for first client req.
+    optional bool        result     = 5;
+}
+
+
+// Message Entries
+message User {
+    required string name       = 1;
+    optional string uuid       = 2;     // This is optional ONLY in RegisterReq
+    optional uint64 reg_date   = 3;
+    optional uint64 last_login = 4;
+}
+
+message UserList {
+    repeated User users = 1;
+    optional uint64 last_update = 5;
+}
+
+
+// Message Body
+message Message {
+    required MessageHeader header = 1;
+    optional bytes         data   = 4;
+}
+
+

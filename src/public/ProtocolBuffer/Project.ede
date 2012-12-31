@@ -13,7 +13,7 @@
    (ede-proj-target-makefile-miscelaneous "protobuf"
     :name "protobuf"
     :path ""
-    :source '("BasicProtocol.proto" "MessageHeader.proto" "THMessage.proto" "Makefile.ByHand")
+    :source '("BasicProtocol.proto" "MessageHeader.proto" "THMessage.proto" "Makefile.ByHand" "DBTables.proto" "Notation.org")
     :submakefile "Makefile.ByHand"
     )
    )

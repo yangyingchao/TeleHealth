@@ -1,0 +1,36 @@
+* Protocol Defination
+
+** Protocol Table
+
+    Byte/     0       |       1       |       2       |       3       |
+    ***/              |               |               |               |
+    **|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
+    **+---------------+---------------+-------------------------------+
+    **|  MSG Type     |ATTRS(Reserved)|        Reserved               |
+    **+---------------+---------------+-------------------------------+
+     4|  AHS Length   |            Message Length                     |
+    **+---------------+---------------+-------------------------------+
+    **|                                                               |
+    **|                                                               |
+    **|                      Messages                                 |
+    **|                                                               |
+    **|                                                               |
+    **+---------------------------------------------------------------+
+
+* Header
+
+  This header is used by TCP connections.
+
+*** ATTRs
+
+    Additional attributes, to be added later.
+
+*** AHS
+
+     Additional Header Segment (AHS), Used to extend this message. To be added.
+
+* Message
+
+  Message body contains serialized data of google Protocol buffer.
+
+  Message is divided into two parts: MessageHeader and MessageBody. (refer to THMessage.proto).
