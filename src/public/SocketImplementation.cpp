@@ -13,7 +13,6 @@
 
 #define BACK_LOG       4096
 
-
 // Implementation of SockTcp
 
 /* See description in header file. */
@@ -297,44 +296,29 @@ SocketTcp::SocketTcp()
 /* See description in header file. */
 TcpMessage::TcpMessage(MessagePtr message)
         : m_message(message),
-          m_state(TMS_Ready),
+          m_state(TMS_Invalid),
           m_bodySize(0),
           m_body(NULL)
 {
-    memset(&m_header, 0, sizeof(m_header));
-
-    //XXX: Replace TMP_FLAG with some filed from message.
-    m_header.type = TMP_FLAG;
-
-    if (message)
+    memset(&m_tcpHeader, 0, HEADER_LENGTH);
+    if (message && message->m_header)
     {
-        m_header.data_size = message->ByteSize();
-        m_bodySize = m_header.data_size;
-        if (m_header.data_size)
-        {
-            m_body = malloc(m_bodySize);
-            memset(m_body, 0, m_bodySize);
+        // Set Header of TCP packet: length and CheckSum.
+        uint32* ptr = &m_tcpHeader;
+        uint32 length   = message->m_header->length();
+        assert(length <= 0xFFFFFF);
+        *ptr = (((length & 0xFFFFFF) << 8) | ((length ^ m_checkSum) & 0xFF));
 
-            if (!m_message->SerializeToArray(m_body, m_bodySize))
-            {
-                if (m_body)
-                {
-                    free(m_body);
-                    m_body = NULL;
-                }
-                m_state = TMS_Invalid;
-            }
-        }
+        // Prepare real data to send.
+        m_bodySize = message->m_dataSize;
+        m_tcpData  = message->m_data;
+        m_state    = TMS_Ready;
     }
 }
 
 /* See description in header file. */
 TcpMessage::~TcpMessage()
 {
-    if (m_body)
-    {
-        free(m_body);
-    }
 }
 
 /* See description in header file. */
@@ -345,8 +329,6 @@ TcpMessage::TcpMessage()
           m_body(NULL)
 {
     memset(&m_header, 0, sizeof(m_header));
-    //XXX:
-    m_header.type = TMP_FLAG;
 }
 
 /* See description in header file. */

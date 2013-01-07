@@ -2,18 +2,24 @@
 #define _MESSAGEBASE_H_
 
 #include "typedefs.h"
+#include "SmartPointer.h"
 
 const uint8 TMP_FLAG = 1;
 
-typedef struct _msg_header
-{
-    uint8  type;
-    uint8  attr;
-    uint8  reserved[2];
-    uint8  ahs_legth;
-    uint8  msg_length[3];
-} msg_header;
+class MessageHeader;
+typedef shared_ptr<MessageHeader> MessageHeaderPtr;
 
-#define HEADER_LENGTH       sizeof(msg_header)
+/** This should be treat as raw message, packet headers need to be added when transport. */
+class Message
+{
+public:
+    Message();
+    virtual ~Message();
+    shared_ptr<MessageHeader> m_header;
+    void*  m_data;
+    uint32 m_dataSize;
+};
+
+typedef shared_ptr<Message> MessagePtr;
 
 #endif /* _MESSAGEBASE_H_ */

@@ -37,6 +37,16 @@ typedef enum _TcpMessageState
     TMS_F,                              /*!< Finished. */
 } TcpMessageState;
 
+
+
+typedef struct _msg_header
+{
+    uint8[3] msg_length;
+    uint8    digest;
+} msg_header;
+
+#define HEADER_LENGTH       sizeof(msg_header)
+
 class TcpMessage
 {
 public:
@@ -53,13 +63,13 @@ protected:
     MessagePtr      m_message;
     TcpMessageState m_state;
 
-    msg_header      m_header;
-    void*           m_body;
-    size_t          m_bodySize;
+    msg_header      m_tcpHeader; // Tcp Header,
+    void*           m_tcpData;   // TCP Data, dumpped from Message class.
+    size_t          m_dataSize;
 
 private:
     bool PrepareSpace(size_t size);
-
+    static uint32 m_checkSum = 0x12E72AE;
 };
 
 #endif /* _SOCKETIMPLEMENTATION_H_ */
