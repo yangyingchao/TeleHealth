@@ -2,7 +2,9 @@
 #define _SOCKETIMPLEMENTATION_H_
 
 #include "Socket.h"
-#include "MessageBase.h"
+#include "THMessageBase.h"
+
+class DataBlob;
 
 class SocketTcp : public Socket
 {
@@ -11,9 +13,9 @@ public:
     SocketTcp(const char* host, bool forListen);
     virtual ~SocketTcp();
 
-    virtual int Send(const MessagePtr& msg);
+    virtual int Send(const THMessagePtr& msg);
 
-    virtual MessagePtr Receive();
+    virtual THMessagePtr Receive();
 
     virtual Socket* Accept();
 
@@ -26,7 +28,7 @@ private:
 };
 
 
-typedef enum _TcpMessageState
+typedef enum _TcpTHMessageState
 {
     TMS_Invalid = 0,                    /*!< Invalid state.    */
     TMS_Ready,                          /*!< Ready state */
@@ -35,39 +37,30 @@ typedef enum _TcpMessageState
     TMS_R_H,                            /*!< Header Received */
     TMS_R_B,                            /*!< Body Received   */
     TMS_F,                              /*!< Finished. */
-} TcpMessageState;
+} TcpTHMessageState;
 
 
-
-typedef struct _msg_header
-{
-    uint8[3] msg_length;
-    uint8    digest;
-} msg_header;
-
-#define HEADER_LENGTH       sizeof(msg_header)
-
-class TcpMessage
+class TcpTHMessage
 {
 public:
     friend class SocketTcp;
 
-    TcpMessage(MessagePtr message);
-    TcpMessage();
-    virtual ~TcpMessage();
+    TcpTHMessage(THMessagePtr message);
+    TcpTHMessage();
+    virtual ~TcpTHMessage();
 
     bool ParseHeader();
     bool ParseBody();
 
 protected:
-    MessagePtr      m_message;
-    TcpMessageState m_state;
+    THMessagePtr      m_pTHMessage;
+    TcpTHMessageState m_state;
 
-    msg_header      m_tcpHeader; // Tcp Header,
-    void*           m_tcpData;   // TCP Data, dumpped from Message class.
-    size_t          m_dataSize;
-
+    unsigned char m_header[HEADER_LENGTH]; // All message headers should dumped into this buffer,  and
+    void* m_packetHeader;
+    void* m_packetData;
 private:
+    shared_ptr<DataBlob> m_pBlob;
     bool PrepareSpace(size_t size);
     static uint32 m_checkSum = 0x12E72AE;
 };

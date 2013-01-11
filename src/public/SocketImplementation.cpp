@@ -1,5 +1,5 @@
 #include "SocketImplementation.h"
-#include "THMessage.pb.h"
+#include "THTHMessage.pb.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,9 +79,9 @@ SocketTcp::~SocketTcp()
 }
 
 /* See description in header file. */
-int SocketTcp::Send(const MessagePtr& msg)
+int SocketTcp::Send(const THMessagePtr& msg)
 {
-    TcpMessage tMsg(msg);
+    TcpTHMessage tMsg(msg);
 
     while (true)
     {
@@ -93,7 +93,7 @@ int SocketTcp::Send(const MessagePtr& msg)
             }
             case TMS_Ready: // Ready, begin to send header.
             {
-                if (!SendProc(&tMsg.m_header, HEADER_LENGTH))
+                if (!SendProc(&tMsg.m_msgHeader, HEADER_LENGTH))
                 {
                     goto error;
                 }
@@ -104,7 +104,7 @@ int SocketTcp::Send(const MessagePtr& msg)
             }
             case TMS_S_H: // Header is sent, now send Body
             {
-                if (SendProc(tMsg.m_body, tMsg.m_bodySize))
+                if (SendProc(tMsg.m_msgBody, tMsg.m_msgBodySize))
                 {
                     tMsg.m_state = TMS_F;
                 }
@@ -131,9 +131,9 @@ error:
 }
 
 /* See description in header file. */
-MessagePtr SocketTcp::Receive()
+THMessagePtr SocketTcp::Receive()
 {
-    TcpMessage tMsg;
+    TcpTHMessage tMsg;
     while (true)
     {
         switch (tMsg.m_state)
@@ -144,7 +144,7 @@ MessagePtr SocketTcp::Receive()
             }
             case TMS_Ready:
             {
-                if (!RecvProc(&tMsg.m_header, HEADER_LENGTH))
+                if (!RecvProc(&tMsg.m_msgHeader, HEADER_LENGTH))
                 {
                     goto error;
                 }
@@ -154,7 +154,7 @@ MessagePtr SocketTcp::Receive()
             }
             case TMS_R_H: // Header received.
             {
-                if (!tMsg.ParseHeader() || !RecvProc(tMsg.m_body, tMsg.m_bodySize))
+                if (!tMsg.ParseHeader() || !RecvProc(tMsg.m_msgBody, tMsg.m_msgBodySize))
                 {
                     goto error;
                 }
@@ -178,9 +178,9 @@ MessagePtr SocketTcp::Receive()
     }
 
 error:
-    tMsg.m_message.reset();
+    tMsg.m_pTHMessage.reset();
 ok:
-    return tMsg.m_message;
+    return tMsg.m_pTHMessage;
 }
 
 
@@ -294,108 +294,95 @@ SocketTcp::SocketTcp()
 }
 
 /* See description in header file. */
-TcpMessage::TcpMessage(MessagePtr message)
-        : m_message(message),
+TcpTHMessage::TcpTHMessage(THMessagePtr message)
+        : m_pTHMessage(message),
           m_state(TMS_Invalid),
-          m_bodySize(0),
-          m_body(NULL)
+          m_msgBodySize(0),
+          m_msgBody(NULL)
 {
-    memset(&m_tcpHeader, 0, HEADER_LENGTH);
-    if (message && message->m_header)
+    if (message && message->m_data)
     {
-        // Set Header of TCP packet: length and CheckSum.
-        uint32* ptr = &m_tcpHeader;
-        uint32 length   = message->m_header->length();
-        assert(length <= 0xFFFFFF);
-        *ptr = (((length & 0xFFFFFF) << 8) | ((length ^ m_checkSum) & 0xFF));
-
-        // Prepare real data to send.
-        m_bodySize = message->m_dataSize;
-        m_tcpData  = message->m_data;
+        m_msgHeader   = &message->m_msgHeader;
+        m_msgBody     = message->m_data;
+        m_msgBodySize = message->m_dataSize;
         m_state    = TMS_Ready;
     }
 }
 
 /* See description in header file. */
-TcpMessage::~TcpMessage()
+TcpTHMessage::~TcpTHMessage()
 {
 }
 
 /* See description in header file. */
-TcpMessage::TcpMessage()
-        : m_message(),
+TcpTHMessage::TcpTHMessage()
+        : m_pTHMessage(),
           m_state(TMS_Ready),
-          m_bodySize(0),
-          m_body(NULL)
+          m_msgBodySize(0),
+          m_msgBody(NULL)
 {
-    memset(&m_header, 0, sizeof(m_header));
 }
 
 /* See description in header file. */
-bool TcpMessage::PrepareSpace(size_t size)
+bool TcpTHMessage::PrepareSpace(size_t size)
 {
-    bool bRet = true;
+    bool ret = true;
     if (size)
     {
-        m_body = malloc(size);
-        if (m_body)
+        m_msgBody = malloc(size);
+        if (m_msgBody)
         {
-            memset(m_body, 0, size);
+            memset(m_msgBody, 0, size);
         }
         else
         {
-            bRet = false;
+            ret = false;
         }
     }
-    return bRet;
+    return ret;
 }
 
 /* See description in header file. */
-bool TcpMessage::ParseHeader()
+bool TcpTHMessage::ParseHeader()
 {
-    bool bRet = false;
-    if (m_header.type == TMP_FLAG && !m_header.reserved[0] && !m_header.reserved[1] &&
-        !m_header.reserved[2])
+    bool ret = false;
+    m_pTHMessage.reset(new THMessage);
+    THMessageHeaderPtr header(new THMessageHeader);
+    if (m_pTHMessage && header && (header->ParseFromArray(&m_msgHeader, HEADER_LENGTH)))
     {
-        bRet = true;
-        m_bodySize = m_header.data_size;
-        if (m_bodySize)
+        uint32 dataSize = header->length();
+        m_pBlob = DataBlob::GetInstance();
+        if (m_pBlob && m_pBlob->PrepareSpace(dataSize) &&
+            (m_packetData = m_pBlob->GetData()))
         {
-            m_body = malloc(m_bodySize);
-            if (!m_body)
-            {
-                bRet = false;
-                goto ret;
-            }
-
-            memset(m_body, 0, m_bodySize);
+            ret = true;
         }
     }
 ret:
-    if (!bRet)
+    if (!ret)
     {
         PDEBUG ("Returning false!\n");
     }
-    return bRet;
+    return ret;
 }
 
 /* See description in header file. */
-bool TcpMessage::ParseBody()
+bool TcpTHMessage::ParseBody()
 {
-    bool bRet = true;
-    if (m_body && m_bodySize)
+    bool ret = true;
+    if (m_msgBody && m_msgBodySize)
     {
-        m_message.reset(new Message);
-        if (!m_message)
+        m_pTHMessage.reset(new THMessage);
+        if (!m_pTHMessage)
         {
-            bRet = false;
+            ret = false;
             goto ret;
         }
 
-        bRet = m_message->ParseFromArray(m_body, m_bodySize);
+        // ret = m_pTHMessage->ParseFromArray(m_msgBody, m_msgBodySize);
     }
 ret:
-    return bRet;
+    return ret;
 }
 
 

@@ -1,16 +1,15 @@
-#include "MessageBase.h"
+#include "THMessageBase.h"
+#include "THTHMessage.pb.h"
 
 /* See description in header file. */
-Message::Message()
-        : m_data(NULL),
-          m_dataSize(0)
+THMessage::THMessage()
 {
 }
 
 /* See description in header file. */
-Message::~Message()
+THMessage::~THMessage()
 {
-    m_header.reset();
+    m_pHeader.reset();
     if (m_data)
     {
         delete m_data;

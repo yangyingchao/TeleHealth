@@ -15,8 +15,8 @@ typedef enum _SocketType
     ST_UDP,
 } SocketType;
 
-class Message;
-typedef shared_ptr<Message> MessagePtr;
+class THMessage;
+typedef shared_ptr<THMessage> THMessagePtr;
 
 class Socket
 {
@@ -29,8 +29,8 @@ public:
                                 const char* host = NULL,
                                 bool forListen = true);
 
-    virtual int Send(const MessagePtr& msg) = 0;
-    virtual MessagePtr Receive() = 0;
+    virtual int Send(const THMessagePtr& msg) = 0;
+    virtual THMessagePtr Receive() = 0;
     virtual Socket* Accept() = 0;
     virtual void Close() = 0;
 
