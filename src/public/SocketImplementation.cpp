@@ -81,7 +81,7 @@ SocketTcp::~SocketTcp()
 /* See description in header file. */
 int SocketTcp::Send(const THMessagePtr& msg)
 {
-    TcpTHMessage tMsg(msg);
+    TcpMessage tMsg(msg);
 
     while (true)
     {
@@ -93,7 +93,7 @@ int SocketTcp::Send(const THMessagePtr& msg)
             }
             case TMS_Ready: // Ready, begin to send header.
             {
-                if (!SendProc(&tMsg.m_msgHeader, HEADER_LENGTH))
+                if (!SendProc(tMsg.m_packetHeader, HEADER_LENGTH))
                 {
                     goto error;
                 }
@@ -104,7 +104,7 @@ int SocketTcp::Send(const THMessagePtr& msg)
             }
             case TMS_S_H: // Header is sent, now send Body
             {
-                if (SendProc(tMsg.m_msgBody, tMsg.m_msgBodySize))
+                if (SendProc(tMsg.m_packetData, tMsg.m_dataSize))
                 {
                     tMsg.m_state = TMS_F;
                 }
@@ -133,7 +133,7 @@ error:
 /* See description in header file. */
 THMessagePtr SocketTcp::Receive()
 {
-    TcpTHMessage tMsg;
+    TcpMessage tMsg;
     while (true)
     {
         switch (tMsg.m_state)
@@ -154,7 +154,7 @@ THMessagePtr SocketTcp::Receive()
             }
             case TMS_R_H: // Header received.
             {
-                if (!tMsg.ParseHeader() || !RecvProc(tMsg.m_msgBody, tMsg.m_msgBodySize))
+                if (!tMsg.ParseHeader() || !RecvProc(tMsg.m_packetData, tMsg.m_dataSize))
                 {
                     goto error;
                 }
@@ -164,10 +164,6 @@ THMessagePtr SocketTcp::Receive()
             }
             case TMS_F:
             {
-                if (!tMsg.ParseBody())
-                {
-                    goto error;
-                }
                 goto ok;
             }
             default:
@@ -293,46 +289,48 @@ SocketTcp::SocketTcp()
 {
 }
 
+
+// Implementation of TCP Message
 /* See description in header file. */
-TcpTHMessage::TcpTHMessage(THMessagePtr message)
+TcpMessage::TcpMessage(THMessagePtr message)
         : m_pTHMessage(message),
           m_state(TMS_Invalid),
-          m_msgBodySize(0),
-          m_msgBody(NULL)
+          m_dataSize(0),
+          m_packetData(NULL)
 {
     if (message && message->m_data)
     {
-        m_msgHeader   = &message->m_msgHeader;
-        m_msgBody     = message->m_data;
-        m_msgBodySize = message->m_dataSize;
-        m_state    = TMS_Ready;
+        m_msgHeader  = &message->m_msgHeader;
+        m_packetData = message->m_data;
+        m_dataSize   = message->m_dataSize;
+        m_state      = TMS_Ready;
     }
 }
 
 /* See description in header file. */
-TcpTHMessage::~TcpTHMessage()
+TcpMessage::~TcpMessage()
 {
 }
 
 /* See description in header file. */
-TcpTHMessage::TcpTHMessage()
+TcpMessage::TcpMessage()
         : m_pTHMessage(),
           m_state(TMS_Ready),
-          m_msgBodySize(0),
-          m_msgBody(NULL)
+          m_dataSize(0),
+          m_packetData(NULL)
 {
 }
 
 /* See description in header file. */
-bool TcpTHMessage::PrepareSpace(size_t size)
+bool TcpMessage::PrepareSpace(size_t size)
 {
     bool ret = true;
     if (size)
     {
-        m_msgBody = malloc(size);
-        if (m_msgBody)
+        m_packetData = malloc(size);
+        if (m_packetData)
         {
-            memset(m_msgBody, 0, size);
+            memset(m_packetData, 0, size);
         }
         else
         {
@@ -343,14 +341,14 @@ bool TcpTHMessage::PrepareSpace(size_t size)
 }
 
 /* See description in header file. */
-bool TcpTHMessage::ParseHeader()
+bool TcpMessage::ParseHeader()
 {
     bool ret = false;
     m_pTHMessage.reset(new THMessage);
-    THMessageHeaderPtr header(new THMessageHeader);
+    MessageHeaderPtr header(new MessageHeader);
     if (m_pTHMessage && header && (header->ParseFromArray(&m_msgHeader, HEADER_LENGTH)))
     {
-        uint32 dataSize = header->length();
+        m_dataSize = header->length();
         m_pBlob = DataBlob::GetInstance();
         if (m_pBlob && m_pBlob->PrepareSpace(dataSize) &&
             (m_packetData = m_pBlob->GetData()))
@@ -358,19 +356,20 @@ bool TcpTHMessage::ParseHeader()
             ret = true;
         }
     }
-ret:
+#ifdef DEBUG
     if (!ret)
     {
-        PDEBUG ("Returning false!\n");
+        printf("%s: Returning false!\n", __FUNCTION__);
     }
+#endif
     return ret;
 }
 
 /* See description in header file. */
-bool TcpTHMessage::ParseBody()
+bool TcpMessage::ParseBody()
 {
     bool ret = true;
-    if (m_msgBody && m_msgBodySize)
+    if (m_packetData && m_dataSize)
     {
         m_pTHMessage.reset(new THMessage);
         if (!m_pTHMessage)
@@ -379,7 +378,7 @@ bool TcpTHMessage::ParseBody()
             goto ret;
         }
 
-        // ret = m_pTHMessage->ParseFromArray(m_msgBody, m_msgBodySize);
+        // ret = m_pTHMessage->ParseFromArray(m_packetData, m_dataSize);
     }
 ret:
     return ret;

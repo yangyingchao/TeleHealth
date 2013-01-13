@@ -1,6 +1,5 @@
 #include "DataBlob.h"
 
-
 /* See description in header file. */
 DataBlob::DataBlob()
         : m_data(NULL),

@@ -28,7 +28,7 @@ private:
 };
 
 
-typedef enum _TcpTHMessageState
+typedef enum _TcpMessageState
 {
     TMS_Invalid = 0,                    /*!< Invalid state.    */
     TMS_Ready,                          /*!< Ready state */
@@ -37,32 +37,34 @@ typedef enum _TcpTHMessageState
     TMS_R_H,                            /*!< Header Received */
     TMS_R_B,                            /*!< Body Received   */
     TMS_F,                              /*!< Finished. */
-} TcpTHMessageState;
+} TcpMessageState;
 
 
-class TcpTHMessage
+class TcpMessage
 {
 public:
     friend class SocketTcp;
 
-    TcpTHMessage(THMessagePtr message);
-    TcpTHMessage();
-    virtual ~TcpTHMessage();
+    TcpMessage(THMessagePtr message);
+    TcpMessage();
+    virtual ~TcpMessage();
 
     bool ParseHeader();
     bool ParseBody();
 
-protected:
-    THMessagePtr      m_pTHMessage;
-    TcpTHMessageState m_state;
+private:
+    bool PrepareSpace(size_t size);
 
-    unsigned char m_header[HEADER_LENGTH]; // All message headers should dumped into this buffer,  and
+    THMessagePtr         m_pTHMessage;
+
+    unsigned char        m_header[HEADER_LENGTH];
+    TcpMessageState      m_state;
+    shared_ptr<DataBlob> m_pBlob;
+
     void* m_packetHeader;
     void* m_packetData;
-private:
-    shared_ptr<DataBlob> m_pBlob;
-    bool PrepareSpace(size_t size);
-    static uint32 m_checkSum = 0x12E72AE;
+    uint32 m_dataSize;
+
 };
 
 #endif /* _SOCKETIMPLEMENTATION_H_ */
