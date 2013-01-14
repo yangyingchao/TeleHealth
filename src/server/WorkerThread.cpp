@@ -145,7 +145,7 @@ void WorkerThread::SetThreadPool(ThreadPool* pool)
 /* See description in header file. */
 THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
 {
-    THMessagePtr rsp;
+    THMessagePtr rsp(new THMessage);
     MessageHeaderPtr header = request ? request->GetMessageHeader() : MessageHeaderPtr();
     if (header->has_version())
     {
@@ -154,6 +154,8 @@ THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
     }
     // XXX: Implement this!!
 
+    rsp->SetMessageHeader(header);
+    rsp->SetMessageBody(header);
     return rsp;
 }
 

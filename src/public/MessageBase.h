@@ -38,10 +38,13 @@ public:
     const DataBlobPtr GetBodyBlob();
 
 private:
+
+    void UpdateHeaderSize();
+
     MessageHeaderPtr m_pHeader;         // Here we know how this header looks like.
     MessagePtr       m_pBodyMessage;    // But we don't know the real Message.
     DataBlobPtr      m_pBodyBlob;       // So we put serialized data into this blob.
-    DataBlobPtr      m_pHeaderBlob;
+    DataBlobPtr      m_pHeaderBlob;     // First 2 bytes are size of this header.
 };
 
 typedef shared_ptr<THMessage> THMessagePtr;

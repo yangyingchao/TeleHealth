@@ -1,4 +1,5 @@
 #include "DataBlob.h"
+#include "LogUtils.h"
 
 /* See description in header file. */
 DataBlob::DataBlob()
@@ -32,9 +33,8 @@ uint32 DataBlob::GetDataSize()
 bool DataBlob::PrepareSpace(uint32 size)
 {
     bool ret = false;
-    if (size > 0 && !m_data) // This is single blob, imitable size.
+    if (size > 0 && !m_data && (m_data = malloc(size))) // This is single blob, imitable size.
     {
-        m_data = malloc(size);
         memset(m_data, 0, size);
         m_size = size;
         ret = true;

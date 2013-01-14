@@ -45,7 +45,6 @@ main(int argc, char *argv[])
         header.reset(new MessageHeader);
         // Checks are skipped for this test app.
         header->set_version("20120730");
-        header->set_length(1024);
         if (j%2 == 0)
         {
             header->set_type(Plain);
@@ -60,6 +59,8 @@ main(int argc, char *argv[])
         user.reset(new User);
         user->set_name("Hello");
         message->SetMessageBody(user);
+
+        header->set_length(user->ByteSize() + sizeof(int16));
 
         printf("Sending  msg: %d\n", j-1);
 

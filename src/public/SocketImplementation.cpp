@@ -141,12 +141,14 @@ THMessagePtr SocketTcp::Receive()
         {
             case TMS_Invalid:
             {
+                PDEBUG ("1\n");
                 goto error;
             }
             case TMS_Ready:
             {
-                if (!RecvProc(&tMsg.m_packetHeader, HEADER_LENGTH))
+                if (!RecvProc(tMsg.m_packetHeader, HEADER_LENGTH))
                 {
+                    PDEBUG ("2\n");
                     goto error;
                 }
 
@@ -177,6 +179,7 @@ THMessagePtr SocketTcp::Receive()
 error:
     tMsg.m_pTHMessage.reset();
 ok:
+    PDEBUG ("Returning: %p\n", tMsg.m_pTHMessage.get());
     return tMsg.m_pTHMessage;
 }
 
@@ -314,6 +317,8 @@ TcpMessage::TcpMessage(THMessagePtr message)
             m_state      = TMS_Ready;
         }
     }
+    PDEBUG ("Header: %p, Body: %p, BodySize: %d\n",
+            m_packetHeader, m_packetData, m_dataSize);
 }
 
 /* See description in header file. */
@@ -360,7 +365,6 @@ bool TcpMessage::ParseHeader()
 {
     bool ret = false;
     m_pTHMessage.reset(new THMessage);
-    MessageHeaderPtr header(new MessageHeader);
     if (m_pTHMessage && m_pTHMessage->LoadHeaderFromBlob(m_pBlob))
     {
         DataBlobPtr bodyBlob = m_pTHMessage->GetBodyBlob();
@@ -368,6 +372,7 @@ bool TcpMessage::ParseHeader()
         {
             m_packetData = bodyBlob->GetData();
             m_dataSize = bodyBlob->GetDataSize();
+            PDEBUG ("data: %p, size: %d\n", m_packetData, m_dataSize);
             ret = true;
         }
     }
@@ -379,26 +384,4 @@ bool TcpMessage::ParseHeader()
 #endif
     return ret;
 }
-
-/* See description in header file. */
-bool TcpMessage::ParseBody()
-{
-    bool ret = true;
-    if (m_packetData && m_dataSize)
-    {
-        m_pTHMessage.reset(new THMessage);
-        if (!m_pTHMessage)
-        {
-            ret = false;
-            goto ret;
-        }
-
-        // ret = m_pTHMessage->ParseFromArray(m_packetData, m_dataSize);
-    }
-ret:
-    return ret;
-}
-
-
-
 

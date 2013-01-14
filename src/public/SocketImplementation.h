@@ -50,7 +50,6 @@ public:
     virtual ~TcpMessage();
 
     bool ParseHeader();
-    bool ParseBody();
 
 private:
     bool PrepareSpace(size_t size);
