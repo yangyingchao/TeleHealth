@@ -1,5 +1,8 @@
 #include "DataBlob.h"
 #include "LogUtils.h"
+#include <string.h>
+#include <stdlib.h>
+
 
 /* See description in header file. */
 DataBlob::DataBlob()

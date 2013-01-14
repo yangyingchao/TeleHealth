@@ -149,13 +149,25 @@ THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
     MessageHeaderPtr header = request ? request->GetMessageHeader() : MessageHeaderPtr();
     if (header->has_version())
     {
+        //TODO: Add version checking...
         cout << "**********\t\tReceived data: "
              << header->version().c_str() << endl;
     }
     // XXX: Implement this!!
+    if (!m_pMessageProcessor)
+    {
+        m_pMessageProcessor = MessageProcessor::GetInstance(header);
+    }
+    if (!m_pMessageProcessor)
+    {
+        rsp->SetMessageHeader(header);
+        rsp->SetMessageBody(header);
+    }
+    else
+    {
+        res = m_pMessageProcessor->ProcessMessage(request);
+    }
 
-    rsp->SetMessageHeader(header);
-    rsp->SetMessageBody(header);
     return rsp;
 }
 
