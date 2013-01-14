@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include "StringUtils.hpp"
-#include "THMessage.pb.h"
+#include "MessageBase.h"
 
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -36,11 +36,14 @@ main(int argc, char *argv[])
     /* Send remaining command-line arguments as separate
        datagrams, and read responses from server */
 
+    THMessagePtr message;
+    MessageHeaderPtr header;
+    shared_ptr<User> user;
     for (j = 1; j < argc; j++)
     {
-
-        MessagePtr msg(new Message);
-        MessageHeader* header = msg->mutable_header();
+        message.reset(new THMessage);
+        header.reset(new MessageHeader);
+        // Checks are skipped for this test app.
         header->set_version("20120730");
         header->set_length(1024);
         if (j%2 == 0)
@@ -52,16 +55,16 @@ main(int argc, char *argv[])
             header->set_type(Invalid);
         }
         header->set_session_id(string(""));
+        message->SetMessageHeader(header);
 
-        msg->set_data(string("Message from client, counter: ") +
-                      StringUtils::Number2String(j) + argv[j]);
-
-        assert(msg->has_header());
+        user.reset(new User);
+        user->set_name("Hello");
+        message->SetMessageBody(user);
 
         printf("Sending  msg: %d\n", j-1);
 
-        sock->Send(msg);
-        msg = sock->Receive();
+        sock->Send(message);
+        (void)(sock->Receive());
         printf("Received ...\n");
         sleep(1);
     }

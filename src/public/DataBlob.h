@@ -14,7 +14,7 @@ public:
     uint32 GetDataSize();
     bool   PrepareSpace(uint32 size);
 
-    static shared_ptr<DataBlob> Instance();
+    static shared_ptr<DataBlob> GetInstance();
 
 private:
     DataBlob();

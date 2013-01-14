@@ -20,8 +20,8 @@ private:
     static void* StaticThreadFunction(void* arg);
     void DoRealWorks();
 
-    ZMessagePtr ProcessRegisterUser(const Message& request);
-    ZMessagePtr GenerateResponseMessage(const Message& request);
+    // ZMessagePtr ProcessRegisterUser(const Message& request);
+    // ZMessagePtr GenerateResponseMessage(const Message& request);
 
     // Private member fields.
     zmq::socket_t*  m_pListenSock;

@@ -46,6 +46,10 @@ void* DBThread::StaticThreadFunction(void* arg)
 
 void DBThread::DoRealWorks()
 {
+
+// TODO: Remove this ifdef!
+#if 0
+
     m_pDataBase = DataBaseFactory::GetInstance(DBT_Sqlite);
     if (!m_pDataBase)
     {
@@ -104,7 +108,12 @@ void DBThread::DoRealWorks()
             m_pListenSock->send(*rsp);
         }
     }
+#endif // End of #if 0
+
 }
+
+// TODO: Remove this ifdef!
+#if 0
 
 /* See description in header file. */
 ZMessagePtr DBThread::ProcessRegisterUser(const Message& request)
@@ -117,4 +126,6 @@ ZMessagePtr DBThread::GenerateResponseMessage(const Message& request)
 {
     return ZMessagePtr();
 }
+
+#endif // End of #if 0
 

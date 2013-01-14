@@ -1,7 +1,6 @@
 #include "MessageBase.h"
+#include "DataBlob.h"
 
-#include "THMessageBase.h"
-#include "THTHMessage.pb.h"
 
 /**
  * @name MessageToBlob - Serialize message into a blob.
@@ -10,33 +9,25 @@
  *                   msg if it is  not -1.
  * @return DataBlobPtr - DataBlob contains message.
  */
-DataBlobPtr MessageToBlob(const MessagePtr& msg, int destSize)
+DataBlobPtr MessageToBlob(const MessagePtr& msg, int destSize=-1)
 {
     DataBlobPtr blob;
     int size = 0;
-    if (msg && ((size = msg->ByteSize()) > 0))
+    if (msg)
     {
-        if (destSize != -1)
+        size = msg->ByteSize();
+        size = size < destSize ? destSize : size;
+        if (size > 0)
         {
-            if (size <= destSize)
+            blob = DataBlob::GetInstance();
+            if (!blob || !blob->PrepareSpace(size) ||
+                !msg->SerializeToArray(blob->GetData(), size))
             {
-                size = destSize;
+                blob.reset();
             }
-            else
-            {
-                // Packet is too large!!
-                goto err;
-            }
-        }
-
-        blob = DataBlob::GetInstance();
-        if (!blob || !blob->PrepareSpace(size) ||
-            !msg->SerializeToArray(blob->GetData(), size))
-        {
-            blob.reset();
         }
     }
-err:
+
     return blob;
 }
 
@@ -48,11 +39,6 @@ THMessage::THMessage()
 /* See description in header file. */
 THMessage::~THMessage()
 {
-    m_pHeader.reset();
-    if (m_data)
-    {
-        delete m_data;
-    }
 }
 
 /* See description in header file. */
@@ -70,27 +56,41 @@ void THMessage::SetMessageBody(const MessagePtr& msg)
 /* See description in header file. */
 bool THMessage::LoadHeaderFromBlob(const DataBlobPtr& blob)
 {
-    bool ret = false;
-    m_pHeader = MessageHeaderPtr(new MessageHeader);
-    if (m_pHeader && blob)
+    bool ret      = false;
+    m_pHeaderBlob = blob;
+    m_pHeader.reset(new MessageHeader);
+    if (m_pHeader && blob &&
+        m_pHeader->ParseFromArray(blob->GetData(), blob->GetDataSize())
+        && (m_pBodyBlob = DataBlob::GetInstance()) &&
+        m_pBodyBlob->PrepareSpace(m_pHeader->length()))
     {
-        m_pHeaderBlob = blob;
-        ret = m_pHeader->ParseFromArray(blob->GetData());
+        ret = true;
     }
     return ret;
 }
 
 /* See description in header file. */
-DataBlobPtr THMessage::GetHeaderBlob()
+const DataBlobPtr THMessage::GetHeaderBlob()
 {
-    m_pHeaderBlob = MessageToBlob(m_pHeader, HEADER_LENGTH);
+    if (!m_pHeaderBlob)
+    {
+        m_pHeaderBlob = MessageToBlob(m_pHeader, HEADER_LENGTH);
+    }
     return m_pHeaderBlob;
 }
 
 /* See description in header file. */
-DataBlobPtr THMessage::GetBodyBlob()
+const DataBlobPtr THMessage::GetBodyBlob()
 {
-    m_pBodyBlob = MessageToBlob(m_pBodyMessage);
+    if (!m_pBodyBlob)
+    {
+        m_pBodyBlob = MessageToBlob(m_pBodyMessage);
+    }
     return  m_pBodyBlob;
 }
 
+/* See description in header file. */
+const MessageHeaderPtr THMessage::GetMessageHeader() const
+{
+    return m_pHeader;
+}

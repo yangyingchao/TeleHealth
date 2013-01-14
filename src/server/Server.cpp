@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include "LogUtils.h"
 #include "DBThread.h"
-#include "GenericWorkThread.h"
 #include "WorkerThread.h"
 #include "Socket.h"
 #include "ThreadPool.h"

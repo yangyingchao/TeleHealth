@@ -2,7 +2,7 @@
 #define _SOCKETIMPLEMENTATION_H_
 
 #include "Socket.h"
-#include "THMessageBase.h"
+#include "MessageBase.h"
 
 class DataBlob;
 
@@ -57,14 +57,12 @@ private:
 
     THMessagePtr         m_pTHMessage;
 
-    unsigned char        m_header[HEADER_LENGTH];
     TcpMessageState      m_state;
-    shared_ptr<DataBlob> m_pBlob;
 
-    void* m_packetHeader;
-    void* m_packetData;
+    void*  m_packetHeader;
+    void*  m_packetData;
     uint32 m_dataSize;
-
+    DataBlobPtr m_pBlob;
 };
 
 #endif /* _SOCKETIMPLEMENTATION_H_ */

@@ -7,14 +7,15 @@
    (ede-proj-target-makefile-program "server"
     :name "server"
     :path ""
-    :source '("Server.cpp" "DBThread.cpp" "GenericWorkThread.cpp" "WorkerThread.cpp" "ThreadPool.cpp")
-    :auxsource '("DBThread.h" "Thread.h" "GenericWorkThread.h" "WorkerThread.h" "ThreadPool.h")
+    :source '("Server.cpp" "DBThread.cpp" "WorkerThread.cpp" "ThreadPool.cpp")
+    :auxsource '("DBThread.h" "Thread.h" "WorkerThread.h" "ThreadPool.h")
     :configuration-variables 'nil
     )
    (ede-proj-target-makefile-program "test"
     :name "test"
     :path ""
     :source '("TestServer.cpp")
+    :configuration-variables 'nil
     )
    )
   :makefile-type 'Makefile.am

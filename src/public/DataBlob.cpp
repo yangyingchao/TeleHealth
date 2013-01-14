@@ -43,7 +43,7 @@ bool DataBlob::PrepareSpace(uint32 size)
 }
 
 /* See description in header file. */
-shared_ptr <DataBlob> DataBlob::Instance()
+shared_ptr <DataBlob> DataBlob::GetInstance()
 {
     return shared_ptr<DataBlob> (new DataBlob);
 }

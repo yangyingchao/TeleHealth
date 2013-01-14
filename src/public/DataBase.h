@@ -4,9 +4,7 @@
 #include <tr1/memory>
 #include <string>
 #include <errno.h>
-
-#include "DBTables.pb.h"
-
+#include "THMessage.pb.h"
 
 using namespace std;
 using namespace tr1;

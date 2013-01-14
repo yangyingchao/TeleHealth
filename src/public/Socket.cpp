@@ -1,5 +1,5 @@
 #include "SocketImplementation.h"
-#include "THTHMessage.pb.h"
+#include "THMessage.pb.h"
 
 // Implementation of Socket.
 

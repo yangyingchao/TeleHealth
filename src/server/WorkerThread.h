@@ -3,6 +3,7 @@
 
 #include "Thread.h"
 #include "Socket.h"
+#include "MessageBase.h"
 
 using namespace std;
 
@@ -44,7 +45,7 @@ private:
     static void* StaticThreadFunction(void* arg);
     void DoRealWorks();
 
-    MessagePtr HandleRequest(const MessagePtr& reqest);
+    THMessagePtr HandleRequest(const THMessagePtr& reqest);
 
     ThreadPool* m_pPool;
 

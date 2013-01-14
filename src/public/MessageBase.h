@@ -3,14 +3,17 @@
 
 #include "typedefs.h"
 #include "SmartPointer.h"
+#include "THMessage.pb.h"
 
 const uint8 TMP_FLAG = 1;
 
 #define HEADER_LENGTH       48
 
-class MessageHeader;
 typedef shared_ptr<MessageHeader> MessageHeaderPtr;
 typedef shared_ptr<google::protobuf::Message> MessagePtr;
+
+class DataBlob;
+typedef shared_ptr<DataBlob> DataBlobPtr;
 
 /** This should be treat as raw message, packet headers need to be added when transport. */
 class THMessage
@@ -21,11 +24,18 @@ public:
 
     void SetMessageHeader(const MessageHeaderPtr& header);
     void SetMessageBody(const MessagePtr& msg);
+    const MessageHeaderPtr GetMessageHeader() const;
 
+    /*! Load header from datablob.
+
+      This will also prepare DataBlob for message body as a side effect!
+
+      @return true if succeeded, or false other wise.
+    */
     bool LoadHeaderFromBlob(const DataBlobPtr& blob);
 
-    DataBlobPtr GetHeaderBlob();
-    DataBlobPtr GetBodyBlob();
+    const DataBlobPtr GetHeaderBlob();
+    const DataBlobPtr GetBodyBlob();
 
 private:
     MessageHeaderPtr m_pHeader;         // Here we know how this header looks like.

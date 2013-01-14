@@ -114,7 +114,7 @@ void WorkerThread::DoRealWorks()
 
         while (true)
         {
-            shared_ptr<Message> msg = sock->Receive();
+            THMessagePtr msg = sock->Receive();
             if (!msg)
             {
                 m_param.m_busy = false;
@@ -128,7 +128,7 @@ void WorkerThread::DoRealWorks()
             }
 
             // TODO: Add real work here.
-            MessagePtr rsp = HandleRequest(msg);
+            THMessagePtr rsp = HandleRequest(msg);
 
             // Send it back to client;
             int n = sock->Send(rsp);
@@ -143,14 +143,14 @@ void WorkerThread::SetThreadPool(ThreadPool* pool)
 }
 
 /* See description in header file. */
-MessagePtr WorkerThread::HandleRequest(const MessagePtr& request)
+THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
 {
-    MessagePtr rsp;
-
-    if (request && request->has_data())
+    THMessagePtr rsp;
+    MessageHeaderPtr header = request ? request->GetMessageHeader() : MessageHeaderPtr();
+    if (header->has_version())
     {
         cout << "**********\t\tReceived data: "
-             << request->data().c_str() << endl;
+             << header->version().c_str() << endl;
     }
     // XXX: Implement this!!
 

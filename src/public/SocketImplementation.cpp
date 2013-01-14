@@ -1,11 +1,12 @@
 #include "SocketImplementation.h"
-#include "THTHMessage.pb.h"
+#include "THMessage.pb.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <netdb.h>
+#include "DataBlob.h"
 
 #define DEBUG
 
@@ -144,7 +145,7 @@ THMessagePtr SocketTcp::Receive()
             }
             case TMS_Ready:
             {
-                if (!RecvProc(&tMsg.m_msgHeader, HEADER_LENGTH))
+                if (!RecvProc(&tMsg.m_packetHeader, HEADER_LENGTH))
                 {
                     goto error;
                 }
@@ -295,15 +296,23 @@ SocketTcp::SocketTcp()
 TcpMessage::TcpMessage(THMessagePtr message)
         : m_pTHMessage(message),
           m_state(TMS_Invalid),
-          m_dataSize(0),
-          m_packetData(NULL)
+          m_packetHeader(NULL),
+          m_packetData(NULL),
+          m_dataSize(0)
 {
-    if (message && message->m_data)
+    if (message)
     {
-        m_msgHeader  = &message->m_msgHeader;
-        m_packetData = message->m_data;
-        m_dataSize   = message->m_dataSize;
-        m_state      = TMS_Ready;
+        DataBlobPtr headerBlob = message->GetHeaderBlob();
+        DataBlobPtr bodyBlob   = message->GetBodyBlob();
+
+        m_packetHeader = headerBlob ? headerBlob->GetData() : NULL;
+        m_packetData   = bodyBlob ? bodyBlob->GetData() : NULL;
+        m_dataSize     = bodyBlob ? bodyBlob->GetDataSize() : 0;
+
+        if (m_packetHeader && m_packetData)
+        {
+            m_state      = TMS_Ready;
+        }
     }
 }
 
@@ -314,11 +323,17 @@ TcpMessage::~TcpMessage()
 
 /* See description in header file. */
 TcpMessage::TcpMessage()
-        : m_pTHMessage(),
-          m_state(TMS_Ready),
-          m_dataSize(0),
-          m_packetData(NULL)
+        : m_state(TMS_Invalid),
+          m_packetHeader(NULL),
+          m_packetData(NULL),
+          m_dataSize(0)
 {
+    m_pBlob = DataBlob::GetInstance();
+    if (m_pBlob && m_pBlob->PrepareSpace(HEADER_LENGTH) &&
+        (m_packetHeader = m_pBlob->GetData()))
+    {
+        m_state = TMS_Ready;
+    }
 }
 
 /* See description in header file. */
@@ -346,13 +361,13 @@ bool TcpMessage::ParseHeader()
     bool ret = false;
     m_pTHMessage.reset(new THMessage);
     MessageHeaderPtr header(new MessageHeader);
-    if (m_pTHMessage && header && (header->ParseFromArray(&m_msgHeader, HEADER_LENGTH)))
+    if (m_pTHMessage && m_pTHMessage->LoadHeaderFromBlob(m_pBlob))
     {
-        m_dataSize = header->length();
-        m_pBlob = DataBlob::GetInstance();
-        if (m_pBlob && m_pBlob->PrepareSpace(dataSize) &&
-            (m_packetData = m_pBlob->GetData()))
+        DataBlobPtr bodyBlob = m_pTHMessage->GetBodyBlob();
+        if (bodyBlob)
         {
+            m_packetData = bodyBlob->GetData();
+            m_dataSize = bodyBlob->GetDataSize();
             ret = true;
         }
     }

@@ -13,6 +13,6 @@ ede_FILES=Project.ede Makefile.am
 SUBDIRS= ProtocolBuffer/
 EXTRA_DIST=Project.ede
 lib_LTLIBRARIES=libthpub.la
-libthpub_la_SOURCES=DataBase.h StringUtils.hpp DataBase/DataBase.cpp generated/c/MessageHeader.pb.cc generated/c/MessageHeader.pb.h generated/c/THMessage.pb.cc generated/c/THMessage.pb.h DataBase/DataBaseSqlite.cpp DataBase/DataBaseSqlite.h DataBase/TableComponent.cpp DataBase/TableComponent.h Utils.cpp generated/c/DBTables.pb.cc generated/c/DBTables.pb.h Socket.cpp SocketImplementation.cpp MessageBase.cpp DataBlob.cpp
+libthpub_la_SOURCES=DataBase.h StringUtils.hpp DataBase/DataBase.cpp generated/c/THMessage.pb.cc generated/c/THMessage.pb.h DataBase/DataBaseSqlite.cpp DataBase/DataBaseSqlite.h DataBase/TableComponent.cpp DataBase/TableComponent.h Utils.cpp Socket.cpp SocketImplementation.cpp MessageBase.cpp DataBlob.cpp
 
 # End of Makefile.am
