@@ -1,17 +1,19 @@
 // Message Header
-enum MessageType {
+enum Command {
     Invalid         = 0;
     RegisterUserReq = 1;
     RegisterUserRsp = 2;
+    UserLoginReq    = 3
+    UserLoginRsp    = 4;
     Plain           = 1000;
 }
 
 message MessageHeader {
-    required MessageType type       = 1 [default = Invalid];
-    required uint32      length     = 2; // Length of data (not header.)
-    required string      version    = 3;
-    required string      session_id = 4; // Set it to empty for first client req.
-    optional bool        result     = 5;
+    required Command type       = 1 [default = Invalid];
+    required uint32  length     = 2;    // Length of data (not header.)
+    required string  version    = 3;
+    required string  session_id = 4;    // Set it to empty for first client req.
+    optional bool    result     = 5;
 }
 
 

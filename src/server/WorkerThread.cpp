@@ -145,27 +145,36 @@ void WorkerThread::SetThreadPool(ThreadPool* pool)
 /* See description in header file. */
 THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
 {
-    THMessagePtr rsp(new THMessage);
+    THMessagePtr rsp;
     MessageHeaderPtr header = request ? request->GetMessageHeader() : MessageHeaderPtr();
+
+    // TODO: Finish error handling here.
+    if (!header)
+    {
+        //
+    }
+
     if (header->has_version())
     {
         //TODO: Add version checking...
         cout << "**********\t\tReceived data: "
              << header->version().c_str() << endl;
     }
-    // XXX: Implement this!!
+
     if (!m_pMessageProcessor)
     {
         m_pMessageProcessor = MessageProcessor::GetInstance(header);
     }
-    if (!m_pMessageProcessor)
+
+    if (m_pMessageProcessor)
     {
+        rsp = m_pMessageProcessor->ProcessMessage(request);
+    }
+    else // TODO: reply error!
+    {
+        rsp.reset(new THMessage);
         rsp->SetMessageHeader(header);
         rsp->SetMessageBody(header);
-    }
-    else
-    {
-        res = m_pMessageProcessor->ProcessMessage(request);
     }
 
     return rsp;
