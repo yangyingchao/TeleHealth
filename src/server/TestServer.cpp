@@ -47,11 +47,11 @@ main(int argc, char *argv[])
         header->set_version("20120730");
         if (j%2 == 0)
         {
-            header->set_type(Plain);
+            header->set_cmd(Plain);
         }
         else
         {
-            header->set_type(Invalid);
+            header->set_cmd(RegisterUserReq);
         }
         header->set_session_id(string(""));
         message->SetMessageHeader(header);

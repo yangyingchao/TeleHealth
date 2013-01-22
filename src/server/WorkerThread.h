@@ -3,7 +3,7 @@
 
 #include "Thread.h"
 #include "Socket.h"
-#include "MessageBase.h"
+#include "MessageProcessor.h"
 
 using namespace std;
 
@@ -48,6 +48,7 @@ private:
     THMessagePtr HandleRequest(const THMessagePtr& reqest);
 
     ThreadPool* m_pPool;
+    MessageProcessorPtr m_pMessageProcessor;
 
 };
 

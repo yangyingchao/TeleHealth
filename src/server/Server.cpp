@@ -13,6 +13,8 @@
 #include "Socket.h"
 #include "ThreadPool.h"
 
+#include "CommandHandlerAggregator.h"
+
 using namespace std;
 using namespace tr1;
 
@@ -62,8 +64,14 @@ int main ()
         handle_error("Failed to create ThreadPool!\n");
     }
 
+    PDEBUG ("2. Init Command handlers ...\n");
 
-    PDEBUG ("2. Prepare listening socket ...\n");
+    if (!InitCommandHandlers())
+    {
+        handle_error("Failed to initialize command handlers.\n");
+    }
+
+    PDEBUG ("3. Prepare listening socket ...\n");
 
     Socket* listenSock = Socket::CreateSocket(ST_TCP, NULL, true);
     if (!listenSock)
@@ -71,7 +79,7 @@ int main ()
         handle_error("Failed to create socket!\n");
     }
 
-    PDEBUG ("3. Accepting connections ... \n");
+    PDEBUG ("4. Accepting connections ... \n");
 
     while (true)
     {

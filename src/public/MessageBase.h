@@ -47,6 +47,10 @@ private:
     DataBlobPtr      m_pHeaderBlob;     // First 2 bytes are size of this header.
 };
 
+
 typedef shared_ptr<THMessage> THMessagePtr;
+
+#define PACK_SIZE(X)       (X + sizeof(uint16))
+
 
 #endif /* _MESSAGEBASE_H_ */

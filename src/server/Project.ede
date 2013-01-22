@@ -7,7 +7,7 @@
    (ede-proj-target-makefile-program "server"
     :name "server"
     :path ""
-    :source '("Server.cpp" "DBThread.cpp" "WorkerThread.cpp" "ThreadPool.cpp" "MessageProcessor.cpp" "CommandHandlerAggregator.cpp")
+    :source '("Server.cpp" "DBThread.cpp" "WorkerThread.cpp" "ThreadPool.cpp" "MessageProcessor.cpp")
     :auxsource '("DBThread.h" "Thread.h" "WorkerThread.h" "ThreadPool.h" "MessageProcessor.h" "Pool.h")
     :configuration-variables 'nil
     )

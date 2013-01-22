@@ -8,17 +8,19 @@ typedef shared_ptr<MessageProcessor> MessageProcessorPtr;
 
 typedef THMessagePtr (*CommandHandler)(THMessagePtr, void* privData);
 
+typedef map<int, CommandHandler> HandlerMap;
+
 class MessageProcessor
 {
 public:
     static MessageProcessorPtr GetInstance(MessageHeaderPtr header);
     virtual ~MessageProcessor();
+    MessageProcessor();
     THMessagePtr ProcessMessage(THMessagePtr msg);
     static bool RegisterCommandHandler(Command cmd, CommandHandler handler);
 private:
-    MessageProcessor();
-    typedef map<int, CommandHandler> HanlderMap;
     static HandlerMap m_commandHandlers;
+    THMessagePtr GenericErrorResponse(MessageHeaderPtr header, ErrorCode err);
 };
 
 

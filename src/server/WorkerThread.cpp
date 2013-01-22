@@ -161,10 +161,14 @@ THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
              << header->version().c_str() << endl;
     }
 
+    PDEBUG ("Processor: %p\n", m_pMessageProcessor.get());
+
     if (!m_pMessageProcessor)
     {
         m_pMessageProcessor = MessageProcessor::GetInstance(header);
     }
+
+    PDEBUG ("Processor: %p\n", m_pMessageProcessor.get());
 
     if (m_pMessageProcessor)
     {
