@@ -17,8 +17,9 @@ public:
 
     ThreadParam* BorrowThread();
     void ReturnThread(WorkerThread* thread);
-
     void CleanUp();
+    virtual void Close();
+    virtual Socket*  Accept() = 0;
 
 private:
     ThreadPool();

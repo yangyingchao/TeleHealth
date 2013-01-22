@@ -29,12 +29,15 @@ public:
                                 const char* host = NULL,
                                 bool forListen = true);
 
-    virtual int Send(const THMessagePtr& msg) = 0;
-    virtual THMessagePtr Receive() = 0;
-    virtual Socket* Accept() = 0;
-    virtual void Close() = 0;
+    virtual int Send(const THMessagePtr& msg);
+    virtual THMessagePtr Receive();
+    virtual void Close();
+    virtual 
 
 protected:
+    bool SendProc(void* buff, size_t length);
+    bool RecvProc(void* buff, size_t length);
+
     int        m_socket;
     SocketType m_type;
 

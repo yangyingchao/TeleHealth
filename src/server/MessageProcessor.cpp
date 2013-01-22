@@ -62,6 +62,10 @@ THMessagePtr MessageProcessor::ProcessMessage(THMessagePtr msg)
         }
     }
 
+    if (!rsp && err == EC_OK)
+    {
+        err = EC_UNEXPECTED;
+    }
     if (err)
     {
         rsp = GenericErrorResponse(header, err);
