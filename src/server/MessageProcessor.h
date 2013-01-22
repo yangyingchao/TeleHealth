@@ -13,7 +13,7 @@ typedef map<int, CommandHandler> HandlerMap;
 class MessageProcessor
 {
 public:
-    static MessageProcessorPtr GetInstance(MessageHeaderPtr header);
+    static MessageProcessor* GetInstance(MessageHeaderPtr header);
     virtual ~MessageProcessor();
     MessageProcessor();
     THMessagePtr ProcessMessage(THMessagePtr msg);

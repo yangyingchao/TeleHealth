@@ -2,7 +2,7 @@
 #include "Pool.h"
 #include <LogUtils.h>
 
-static shared_ptr<ObjectPool<MessageProcessor> > g_pMessageProcessorPool;
+static ObjectPool<MessageProcessor>* g_pMessageProcessorPool;
 
 static const int PoolChunkSize = 64;
 
@@ -14,7 +14,7 @@ static inline bool IsRequestCommand(Command cmd)
 }
 
 /* See description in header file. */
-MessageProcessorPtr MessageProcessor::GetInstance(MessageHeaderPtr header)
+MessageProcessor* MessageProcessor::GetInstance(MessageHeaderPtr header)
 {
     PDEBUG ("enter\n");
     if (!g_pMessageProcessorPool)
@@ -22,9 +22,9 @@ MessageProcessorPtr MessageProcessor::GetInstance(MessageHeaderPtr header)
         g_pMessageProcessorPool = ObjectPool<MessageProcessor>::GetPool(PoolChunkSize);
     }
 
-    PDEBUG ("Pool: %p\n", g_pMessageProcessorPool.get());
+    PDEBUG ("Pool: %p\n", g_pMessageProcessorPool);
     return g_pMessageProcessorPool ?
-            g_pMessageProcessorPool->GetObject() : MessageProcessorPtr();
+            g_pMessageProcessorPool->GetObject() : NULL;
 }
 
 /* See description in header file. */

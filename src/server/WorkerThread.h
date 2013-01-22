@@ -48,7 +48,7 @@ private:
     THMessagePtr HandleRequest(const THMessagePtr& reqest);
 
     ThreadPool* m_pPool;
-    MessageProcessorPtr m_pMessageProcessor;
+    MessageProcessor* m_pMessageProcessor;
 
 };
 

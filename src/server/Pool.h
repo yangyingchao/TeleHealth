@@ -1,64 +1,128 @@
 #ifndef _POOL_H_
 #define _POOL_H_
 
-#include <vector>
-#include <SmartPointer.h>
+
+#define CAS(X, Y, Z)       __sync_bool_compare_and_swap(&(X), Y, Z)
+
+#include <stdlib.h>
+
+typedef struct _record
+{
+    struct _record* next;
+    void*           data;
+} record;
 
 template <typename T>
 class ObjectPool
 {
 public:
 
-    static shared_ptr<ObjectPool<T> > GetPool(int chunkSize)
+    static ObjectPool<T>* GetPool(int chunkSize)
     {
-        return shared_ptr<ObjectPool<T> > (new ObjectPool<T>(chunkSize));
+        return new ObjectPool<T>(chunkSize);
     }
 
     virtual ~ObjectPool()
     {
+        //TODO: Free all objects ...
     }
 
-    void Extend()
-    {
-        for (int i = 0; i < m_chunkSize; ++i)
-        {
-            m_pFreeObjects.push_back(shared_ptr<T> (new T));
-        }
-        m_totalSize += m_chunkSize;
-    }
 
-    //TODO: need locking, need to make it lock free!
-    shared_ptr<T> GetObject()
+    T* GetObject()
     {
-        if (m_pFreeObjects.empty())
+        T* obj = (T*)DeQueue();
+        if (!obj)
         {
             Extend();
+            obj = (T*)DeQueue();
         }
-
-        shared_ptr<T> obj = m_pFreeObjects.at(0);
-        m_pFreeObjects.erase(m_pFreeObjects.begin());
 
         return obj;
     }
 
-    void Put(shared_ptr<T> instance)
+    void Put(T* instance)
     {
         if (instance)
         {
-            m_pFreeObjects.push_back(instance);
+            EnQueue(instance);
         }
+    }
+
+    int GetSize()
+    {
+        return m_totalSize;
     }
 
 private:
     ObjectPool(const int chunkSize)
-            : m_chunkSize(chunkSize)
+            : m_chunkSize(chunkSize),
+              m_listHead(NULL),
+              m_listTail(NULL),
+              m_extending(false)
     {
         (void)Extend();
     }
 
-    vector<shared_ptr<T> > m_pFreeObjects;
+    void Extend()
+    {
+        if (!m_extending)
+        {
+            printf("Extending pool ...\n");
+            m_extending = true;
+
+            for (int i = 0; i < m_chunkSize; ++i)
+            {
+                T* object(new T);
+                EnQueue(object);
+            }
+
+            m_totalSize += m_chunkSize;
+        }
+        m_extending = false;
+    }
+
+
+    // Refer to: http://coolshell.cn/articles/8239.html
+    void EnQueue(void* obj)
+    {
+        record* q = new record();
+        q->data = obj;
+        q->next = NULL;
+
+        if (!CAS(m_listTail, NULL, q))
+        {
+            record* p    = m_listTail;
+            record* oldp = p;
+            do {
+                while (p->next != NULL)
+                    p = p->next;
+            } while(!CAS(p->next, NULL, q));
+
+            CAS(m_listTail, oldp, q);
+        }
+        CAS(m_listHead, NULL, q);
+    }
+
+    void* DeQueue()
+    {
+        record* p = NULL;
+        do
+        {
+            p = m_listHead;
+            if (p->next == NULL)
+            {
+                return NULL;
+            }
+        }
+        while(!CAS(m_listHead, p, p->next));
+        return p->next->data;
+    }
+
     int m_chunkSize;
     int m_totalSize;
+    record* m_listHead;
+    record* m_listTail;
+    volatile bool m_extending; // Flag to indicate this pool is being extending ...
 };
 
 #endif /* _POOL_H_ */
