@@ -12,6 +12,7 @@
 #include "WorkerThread.h"
 #include "Socket.h"
 #include "ThreadPool.h"
+#include "ConfigParser.h"
 
 #include "CommandHandlerAggregator.h"
 
@@ -21,8 +22,21 @@ using namespace tr1;
 #define MAX_WORK_THREAD       64
 
 
-#define handle_error(msg) \
+#define handle_error(msg)                               \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#ifdef DEBUG
+int xStep = 1;
+#define OUT_STEP(fmt, args...)                                          \
+    do {                                                                \
+        const char* file = __FILE__, *ptr = strstr(file, "..");         \
+        if (!ptr) ptr = file; else while (*ptr == '.' || *ptr == '\\' || *ptr == '/') ++ptr; \
+        printf("%s(%d)-%s, Step - %d:\t", ptr, __LINE__,__FUNCTION__, xStep++); \
+        printf(fmt, ##args);                                            \
+    } while(0)
+#else
+#define OUT_STEP(fmt, ...)
+#endif
 
 static ThreadPool<WorkerThread>* gWorkerThreadPool = NULL;
 
@@ -51,11 +65,22 @@ void PrepareSignalHandlers()
     signal (SIGINT,  SigActionForKill);
 }
 
-int main ()
+int main (int argc, char** argv)
 {
     PrepareSignalHandlers();
 
-    PDEBUG ("1. Prepare ThreadPool ... \n");
+    OUT_STEP("Parse Configuration ...\n");
+    ConfigParserPtr config = ConfigParser::GetConfigParserWithParams(argc, argv);
+    if (!config)
+    {
+        handle_error("Failed to get configuration\n");
+    }
+
+    OUT_STEP("Gathering data from database\n");
+    // TODO:
+    // XXX:
+
+    OUT_STEP("Prepare ThreadPool ... \n");
 
     if (!gWorkerThreadPool)
     {
@@ -67,14 +92,14 @@ int main ()
         handle_error("Failed to create ThreadPool!\n");
     }
 
-    PDEBUG ("2. Init Command handlers ...\n");
+    OUT_STEP ("Init Command handlers ...\n");
 
     if (!InitCommandHandlers())
     {
         handle_error("Failed to initialize command handlers.\n");
     }
 
-    PDEBUG ("3. Prepare listening socket ...\n");
+    OUT_STEP ("Prepare listening socket ...\n");
 
     Socket* listenSock = Socket::CreateSocket(ST_TCP, NULL, true);
     if (!listenSock)
@@ -82,7 +107,7 @@ int main ()
         handle_error("Failed to create socket!\n");
     }
 
-    PDEBUG ("4. Accepting connections ... \n");
+    OUT_STEP ("Accepting connections ... \n");
 
     while (true)
     {
@@ -101,35 +126,6 @@ int main ()
             continue;
         }
     }
-
-#if 0
-    //  Prepare our context and sockets
-    zmq::context_t context (1);
-
-    DBThread dbThread(&context);
-    bool bRet = dbThread.Start();
-    if (!bRet)
-    {
-        cout << "Failed to start db thread. " << endl;
-        return -1;
-    }
-
-    PDEBUG ("DB Thread started\n");
-
-    zmq::socket_t clients (context, ZMQ_ROUTER);
-    clients.bind ("tcp://*:5555");
-    zmq::socket_t workers (context, ZMQ_DEALER);
-    workers.bind (INPROC_WORK_PORT);
-
-    GenericWorkerThread* workerThreads[MAX_WORK_THREAD];
-    //  Launch pool of worker threads
-    for (int i = 0; i < MAX_WORK_THREAD; i++) {
-        workerThreads[i] = new GenericWorkerThread(&context);
-        workerThreads[i]->Start();
-    }
-    //  Connect work threads to client threads via a queue
-    zmq::device (ZMQ_QUEUE, clients, workers);
-#endif
 
     CleanupThreadPool();
 

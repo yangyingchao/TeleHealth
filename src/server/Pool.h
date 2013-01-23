@@ -17,9 +17,12 @@ class ObjectPool
 {
 public:
     typedef bool (*callbackFunction)(T*, void*);
-    static ObjectPool<T>* GetPool(int chunkSize, callbackFunction fn = NULL,  void* data = NULL)
+    static ObjectPool<T>* GetPool(int chunkSize,
+                                  callbackFunction fn = NULL,
+                                  void* data = NULL,
+                                  bool autoExpand=false)
     {
-        return new ObjectPool<T>(chunkSize, fn, data);
+        return new ObjectPool<T>(chunkSize, fn, data, autoExpand);
     }
 
     virtual ~ObjectPool()
@@ -31,7 +34,7 @@ public:
     T* GetObject()
     {
         T* obj = (T*)DeQueue();
-        if (!obj)
+        if (!obj && m_autoExpand)
         {
             Extend();
             obj = (T*)DeQueue();
@@ -54,13 +57,14 @@ public:
     }
 
 private:
-    ObjectPool(const int chunkSize, callbackFunction fn, void* data)
+    ObjectPool(const int chunkSize, callbackFunction fn, void* data, bool autoExpand)
             : m_chunkSize(chunkSize),
               m_listHead(NULL),
               m_listTail(NULL),
               m_extending(false),
               m_cb(fn),
-              m_cbData(data)
+              m_cbData(data),
+              m_autoExpand(autoExpand)
     {
         (void)Extend();
     }
@@ -136,6 +140,7 @@ private:
     record* m_listTail;
     callbackFunction m_cb;
     void* m_cbData;
+    bool  m_autoExpand;
     volatile bool m_extending; // Flag to indicate this pool is being extending ...
 };
 

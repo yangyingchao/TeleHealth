@@ -2,7 +2,8 @@
 
 THMessagePtr zzz_RegisterUserCommandHandler(THMessagePtr msg, void* privData)
 {
-    THMessagePtr rsp(msg);
+    THMessagePtr rsp;
+    
     printf("Called!\n");
     return  rsp;
 }
