@@ -16,10 +16,10 @@ template <typename T>
 class ObjectPool
 {
 public:
-
-    static ObjectPool<T>* GetPool(int chunkSize)
+    typedef bool (*callbackFunction)(T*, void*);
+    static ObjectPool<T>* GetPool(int chunkSize, callbackFunction fn = NULL,  void* data = NULL)
     {
-        return new ObjectPool<T>(chunkSize);
+        return new ObjectPool<T>(chunkSize, fn, data);
     }
 
     virtual ~ObjectPool()
@@ -40,7 +40,7 @@ public:
         return obj;
     }
 
-    void Put(T* instance)
+    void PutObject(T* instance)
     {
         if (instance)
         {
@@ -54,11 +54,13 @@ public:
     }
 
 private:
-    ObjectPool(const int chunkSize)
+    ObjectPool(const int chunkSize, callbackFunction fn, void* data)
             : m_chunkSize(chunkSize),
               m_listHead(NULL),
               m_listTail(NULL),
-              m_extending(false)
+              m_extending(false),
+              m_cb(fn),
+              m_cbData(data)
     {
         (void)Extend();
     }
@@ -67,16 +69,26 @@ private:
     {
         if (!m_extending)
         {
-            printf("Extending pool ...\n");
             m_extending = true;
-
+            bool err = false;
             for (int i = 0; i < m_chunkSize; ++i)
             {
                 T* object(new T);
+                if (!object)
+                {
+                    err = true;
+                    break;
+                }
+                if (m_cb && (err = !m_cb(object, m_cbData)))
+                {
+                    break;
+                }
                 EnQueue(object);
             }
-
-            m_totalSize += m_chunkSize;
+            if (!err)
+            {
+                m_totalSize += m_chunkSize;
+            }
         }
         m_extending = false;
     }
@@ -122,6 +134,8 @@ private:
     int m_totalSize;
     record* m_listHead;
     record* m_listTail;
+    callbackFunction m_cb;
+    void* m_cbData;
     volatile bool m_extending; // Flag to indicate this pool is being extending ...
 };
 

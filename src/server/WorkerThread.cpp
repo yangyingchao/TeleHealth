@@ -136,11 +136,6 @@ void WorkerThread::DoRealWorks()
     }
 }
 
-/* See description in header file. */
-void WorkerThread::SetThreadPool(ThreadPool* pool)
-{
-    m_pPool = pool;
-}
 
 /* See description in header file. */
 THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
@@ -182,5 +177,21 @@ THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
     return rsp;
 }
 
+/* See description in header file. */
+bool WorkerThread::TakeOverSocket(Socket* sk)
+{
+    bool result = false;
+    if (sk)
+    {
+        m_param.m_sock = sk;
+        m_param.SignalAction();
+        result = true;
+    }
+    return  result;
+}
 
-
+/* See description in header file. */
+void WorkerThread::SetThreadPool(ThreadPool <WorkerThread>* pool)
+{
+    m_pPool = pool;
+}

@@ -65,8 +65,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_server_OBJECTS = Server.$(OBJEXT) DBThread.$(OBJEXT) \
-	WorkerThread.$(OBJEXT) ThreadPool.$(OBJEXT) \
-	MessageProcessor.$(OBJEXT)
+	WorkerThread.$(OBJEXT) MessageProcessor.$(OBJEXT)
 server_OBJECTS = $(am_server_OBJECTS)
 server_DEPENDENCIES =
 am_test_OBJECTS = TestServer.$(OBJEXT)
@@ -265,7 +264,7 @@ top = ../../
 ede_FILES = Project.ede Makefile.am
 SUBDIRS = 
 EXTRA_DIST = Project.ede
-server_SOURCES = Server.cpp DBThread.cpp WorkerThread.cpp ThreadPool.cpp MessageProcessor.cpp
+server_SOURCES = Server.cpp DBThread.cpp WorkerThread.cpp MessageProcessor.cpp
 test_SOURCES = TestServer.cpp
 server_LDADD = 
 test_LDADD = 
@@ -366,7 +365,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageProcessor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestServer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ThreadPool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorkerThread.Po@am__quote@
 
 .cpp.o:

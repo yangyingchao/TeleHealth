@@ -4,10 +4,10 @@
 #include "Thread.h"
 #include "Socket.h"
 #include "MessageProcessor.h"
+#include "ThreadPool.h"
 
 using namespace std;
 
-class ThreadPool;
 class Socket;
 class Message;
 
@@ -30,16 +30,16 @@ public:
 class WorkerThread : public Thread
 {
 public:
-    friend class ThreadPool;
+    friend class ThreadPool<WorkerThread>;
 
     WorkerThread();
     virtual ~WorkerThread();
 
     virtual bool Start();
-
+    bool TakeOverSocket(Socket* sk);
 protected:
     ThreadParam m_param;
-    void SetThreadPool(ThreadPool* pool);
+    void SetThreadPool(ThreadPool<WorkerThread>* pool);
 
 private:
     static void* StaticThreadFunction(void* arg);
@@ -47,7 +47,7 @@ private:
 
     THMessagePtr HandleRequest(const THMessagePtr& reqest);
 
-    ThreadPool* m_pPool;
+    ThreadPool<WorkerThread>* m_pPool;
     MessageProcessor* m_pMessageProcessor;
 
 };

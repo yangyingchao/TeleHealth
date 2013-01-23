@@ -18,19 +18,19 @@
 using namespace std;
 using namespace tr1;
 
-#define MAX_WORK_THREAD       100
+#define MAX_WORK_THREAD       64
 
 
 #define handle_error(msg) \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
-static ThreadPool* poolInstance = NULL;
+static ThreadPool<WorkerThread>* gWorkerThreadPool = NULL;
 
 void CleanupThreadPool()
 {
-    if (poolInstance)
+    if (gWorkerThreadPool)
     {
-        poolInstance->CleanUp();
+        gWorkerThreadPool->CleanUp();
     }
 }
 
@@ -57,9 +57,12 @@ int main ()
 
     PDEBUG ("1. Prepare ThreadPool ... \n");
 
-    poolInstance = ThreadPool::GetInstance();
+    if (!gWorkerThreadPool)
+    {
+        gWorkerThreadPool = ThreadPool<WorkerThread>::GetInstance();
+    }
 
-    if (!poolInstance)
+    if (!gWorkerThreadPool)
     {
         handle_error("Failed to create ThreadPool!\n");
     }
@@ -86,13 +89,8 @@ int main ()
         Socket* clientSock = listenSock->Accept();
         if (clientSock)
         {
-            ThreadParam* param = poolInstance->BorrowThread();
-            if (param)
-            {
-                param->m_sock = clientSock;
-                param->SignalAction(); // Unlock to make thread execute.
-            }
-            else // TODO: Notify user that we are busy.
+            WorkerThread* thread = gWorkerThreadPool->BorrowThread();
+            if (!thread || !thread->TakeOverSocket(clientSock))
             {
                 clientSock->Close();
             }
