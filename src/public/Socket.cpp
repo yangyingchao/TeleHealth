@@ -1,6 +1,7 @@
 #include "Socket.h"
-
-#include "SocketImplementation.h"
+#include "LogUtils.h"
+#include "SocketTcp.h"
+#include "DataBlob.h"
 #include "THMessage.pb.h"
 
 // Implementation of Socket.
@@ -52,7 +53,7 @@ Socket*  Socket::CreateSocket(SocketType type, const char* host, bool forListen)
 /* See description in header file. */
 int Socket::Send(const THMessagePtr& msg)
 {
-    TcpMessage tMsg(msg);
+    SocketMessage tMsg(msg);
 
     while (true)
     {
@@ -104,7 +105,7 @@ error:
 /* See description in header file. */
 THMessagePtr Socket::Receive()
 {
-    TcpMessage tMsg;
+    SocketMessage tMsg;
     while (true)
     {
         switch (tMsg.m_state)
@@ -151,18 +152,6 @@ error:
 ok:
     PDEBUG ("Returning: %p\n", tMsg.m_pTHMessage.get());
     return tMsg.m_pTHMessage;
-}
-
-/* See description in header file. */
-Socket* Socket::Accept()
-{
-    //XXX: Implement this!
-}
-
-/* See description in header file. */
-void Socket::Close()
-{
-    close(m_socket);
 }
 
 /* See description in header file. */
@@ -240,3 +229,93 @@ bool Socket::RecvProc(void* buff, size_t length)
 }
 
 
+// Implementation of SockMessage
+/* See description in header file. */
+SocketMessage::SocketMessage(THMessagePtr message)
+        : m_pTHMessage(message),
+          m_state(TMS_Invalid),
+          m_packetHeader(NULL),
+          m_packetData(NULL),
+          m_dataSize(0)
+{
+    if (message)
+    {
+        DataBlobPtr headerBlob = message->GetHeaderBlob();
+        DataBlobPtr bodyBlob   = message->GetBodyBlob();
+
+        m_packetHeader = headerBlob ? headerBlob->GetData() : NULL;
+        m_packetData   = bodyBlob ? bodyBlob->GetData() : NULL;
+        m_dataSize     = bodyBlob ? bodyBlob->GetDataSize() : 0;
+
+        if (m_packetHeader) // Data maybe optional...
+        {
+            m_state      = TMS_Ready;
+        }
+    }
+    PDEBUG ("Header: %p, Body: %p, BodySize: %d\n",
+            m_packetHeader, m_packetData, m_dataSize);
+}
+
+/* See description in header file. */
+SocketMessage::~SocketMessage()
+{
+}
+
+/* See description in header file. */
+SocketMessage::SocketMessage()
+        : m_state(TMS_Invalid),
+          m_packetHeader(NULL),
+          m_packetData(NULL),
+          m_dataSize(0)
+{
+    m_pBlob = DataBlob::GetInstance();
+    if (m_pBlob && m_pBlob->PrepareSpace(HEADER_LENGTH) &&
+        (m_packetHeader = m_pBlob->GetData()))
+    {
+        m_state = TMS_Ready;
+    }
+}
+
+/* See description in header file. */
+bool SocketMessage::PrepareSpace(size_t size)
+{
+    bool ret = true;
+    if (size)
+    {
+        m_packetData = malloc(size);
+        if (m_packetData)
+        {
+            memset(m_packetData, 0, size);
+        }
+        else
+        {
+            ret = false;
+        }
+    }
+    return ret;
+}
+
+/* See description in header file. */
+bool SocketMessage::ParseHeader()
+{
+    bool ret = false;
+    m_pTHMessage.reset(new THMessage);
+    if (m_pTHMessage && m_pTHMessage->LoadHeaderFromBlob(m_pBlob))
+    {
+        DataBlobPtr bodyBlob = m_pTHMessage->GetBodyBlob();
+        if (bodyBlob)
+        {
+            m_packetData = bodyBlob->GetData();
+            m_dataSize = bodyBlob->GetDataSize();
+            PDEBUG ("data: %p, size: %d\n", m_packetData, m_dataSize);
+            ret = true;
+        }
+    }
+#ifdef DEBUG
+    if (!ret)
+    {
+        printf("%s: Returning false!\n", __FUNCTION__);
+    }
+#endif
+    return ret;
+}

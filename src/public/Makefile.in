@@ -92,8 +92,8 @@ am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libthpub_la_LIBADD =
 am_libthpub_la_OBJECTS = DataBase.lo THMessage.pb.lo DataBaseSqlite.lo \
-	TableComponent.lo Utils.lo Socket.lo SocketImplementation.lo \
-	MessageBase.lo DataBlob.lo
+	TableComponent.lo Utils.lo Socket.lo MessageBase.lo \
+	DataBlob.lo SocketTcp.lo
 libthpub_la_OBJECTS = $(am_libthpub_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -297,7 +297,7 @@ ede_FILES = Project.ede Makefile.am
 SUBDIRS = ProtocolBuffer/
 EXTRA_DIST = Project.ede
 lib_LTLIBRARIES = libthpub.la
-libthpub_la_SOURCES = DataBase.h StringUtils.hpp DataBase/DataBase.cpp generated/c/THMessage.pb.cc generated/c/THMessage.pb.h DataBase/DataBaseSqlite.cpp DataBase/DataBaseSqlite.h DataBase/TableComponent.cpp DataBase/TableComponent.h Utils.cpp Socket.cpp SocketImplementation.cpp MessageBase.cpp DataBlob.cpp
+libthpub_la_SOURCES = DataBase.h StringUtils.hpp DataBase/DataBase.cpp generated/c/THMessage.pb.cc generated/c/THMessage.pb.h DataBase/DataBaseSqlite.cpp DataBase/DataBaseSqlite.h DataBase/TableComponent.cpp DataBase/TableComponent.h Utils.cpp Socket.cpp MessageBase.cpp DataBlob.cpp SocketTcp.cpp
 all: all-recursive
 
 .SUFFIXES:
@@ -380,7 +380,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataBlob.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageBase.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Socket.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SocketImplementation.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SocketTcp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/THMessage.pb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TableComponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Plo@am__quote@
