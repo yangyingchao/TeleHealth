@@ -3,6 +3,7 @@
 #include "SocketTcp.h"
 #include "DataBlob.h"
 #include "THMessage.pb.h"
+#include "SockUnix.h"
 
 // Implementation of Socket.
 
@@ -36,11 +37,17 @@ Socket*  Socket::CreateSocket(SocketType type, const char* host, bool forListen)
             break;
         }
 
+        case ST_UNIX:
+        {
+            sock = new SocketUnix(host, forListen);
+            break;
+        }
         // Not implemented for now.
         case ST_UDP:
         {
             break;
         }
+
         default:
         {
             break;

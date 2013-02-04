@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <LogUtils.h>
+
+static const int   HASH_SIZE  = 115200;
 
 uint32 StringHashFunction(const char* str)
 {
@@ -50,13 +53,13 @@ void HashTableDestroy(HashTable* table)
 
 HashTable* HashTableCreate(uint32 hashSize, HashFunction cFunctor, DestroyFunction dFunctor)
 {
-    HashTable* table = malloc(sizeof(HashTable));
+    HashTable* table = (HashTable*)malloc(sizeof(HashTable));
     if (table)
     {
         memset(table, 0, sizeof(HashTable));
 
         table->capacity    = hashSize;
-        table->entries     = malloc(sizeof(TableEntry) * hashSize);
+        table->entries     = (TableEntry*)malloc(sizeof(TableEntry) * hashSize);
         table->hashFunctor = cFunctor ? cFunctor : &StringHashFunction;
         table->deFunctor   = dFunctor;
 

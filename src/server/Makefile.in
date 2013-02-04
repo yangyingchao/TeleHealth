@@ -65,7 +65,10 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_server_OBJECTS = Server.$(OBJEXT) DBThread.$(OBJEXT) \
-	WorkerThread.$(OBJEXT) MessageProcessor.$(OBJEXT)
+	WorkerThread.$(OBJEXT) MessageProcessor.$(OBJEXT) \
+	HashTable.$(OBJEXT) ConfigParser.$(OBJEXT) \
+	AccountManager.$(OBJEXT) KVDB.$(OBJEXT) \
+	AccountRequest.$(OBJEXT)
 server_OBJECTS = $(am_server_OBJECTS)
 server_DEPENDENCIES =
 am_test_OBJECTS = TestServer.$(OBJEXT)
@@ -264,7 +267,7 @@ top = ../../
 ede_FILES = Project.ede Makefile.am
 SUBDIRS = 
 EXTRA_DIST = Project.ede
-server_SOURCES = Server.cpp DBThread.cpp WorkerThread.cpp MessageProcessor.cpp
+server_SOURCES = Server.cpp DBThread.cpp WorkerThread.cpp MessageProcessor.cpp HashTable.cpp ConfigParser.cpp AccountManager.cpp KVDB.cpp AccountRequest.cpp
 test_SOURCES = TestServer.cpp
 server_LDADD = 
 test_LDADD = 
@@ -361,7 +364,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AccountManager.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AccountRequest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ConfigParser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DBThread.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HashTable.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KVDB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageProcessor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestServer.Po@am__quote@

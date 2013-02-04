@@ -3,8 +3,6 @@
 
 #include "Socket.h"
 
-class DataBlob;
-
 class SocketTcp : public Socket
 {
 public:

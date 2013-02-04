@@ -1,16 +1,7 @@
 #ifndef _POOL_H_
 #define _POOL_H_
 
-
-#define CAS(X, Y, Z)       __sync_bool_compare_and_swap(&(X), Y, Z)
-
-#include <stdlib.h>
-
-typedef struct _record
-{
-    struct _record* next;
-    void*           data;
-} record;
+#include "LFList.h"
 
 template <typename T>
 class ObjectPool
@@ -33,11 +24,11 @@ public:
 
     T* GetObject()
     {
-        T* obj = (T*)DeQueue();
+        T* obj = (T*)m_list.DeQueue();
         if (!obj && m_autoExpand)
         {
             Extend();
-            obj = (T*)DeQueue();
+            return GetObject();
         }
 
         return obj;
@@ -47,7 +38,7 @@ public:
     {
         if (instance)
         {
-            EnQueue(instance);
+            m_list.EnQueue(instance);
         }
     }
 
@@ -59,8 +50,6 @@ public:
 private:
     ObjectPool(const int chunkSize, callbackFunction fn, void* data, bool autoExpand)
             : m_chunkSize(chunkSize),
-              m_listHead(NULL),
-              m_listTail(NULL),
               m_extending(false),
               m_cb(fn),
               m_cbData(data),
@@ -87,7 +76,7 @@ private:
                 {
                     break;
                 }
-                EnQueue(object);
+                m_list.EnQueue(object);
             }
             if (!err)
             {
@@ -97,51 +86,16 @@ private:
         m_extending = false;
     }
 
-
-    // Refer to: http://coolshell.cn/articles/8239.html
-    void EnQueue(void* obj)
-    {
-        record* q = new record();
-        q->data = obj;
-        q->next = NULL;
-
-        if (!CAS(m_listTail, NULL, q))
-        {
-            record* p    = m_listTail;
-            record* oldp = p;
-            do {
-                while (p->next != NULL)
-                    p = p->next;
-            } while(!CAS(p->next, NULL, q));
-
-            CAS(m_listTail, oldp, q);
-        }
-        CAS(m_listHead, NULL, q);
-    }
-
-    void* DeQueue()
-    {
-        record* p = NULL;
-        do
-        {
-            p = m_listHead;
-            if (p->next == NULL)
-            {
-                return NULL;
-            }
-        }
-        while(!CAS(m_listHead, p, p->next));
-        return p->next->data;
-    }
-
     int m_chunkSize;
     int m_totalSize;
-    record* m_listHead;
-    record* m_listTail;
+
     callbackFunction m_cb;
     void* m_cbData;
+
     bool  m_autoExpand;
     volatile bool m_extending; // Flag to indicate this pool is being extending ...
+
+    LF_List m_list;
 };
 
 #endif /* _POOL_H_ */

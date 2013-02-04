@@ -1,6 +1,9 @@
 #ifndef _HASHTABLE_H_
 #define _HASHTABLE_H_
 
+#include "typedefs.h"
+#include <stdlib.h>
+#include <string.h>
 
 typedef void (*DestroyFunction)(void* data);
 typedef uint32  (*HashFunction)(const char* key);

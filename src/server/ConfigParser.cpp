@@ -21,12 +21,12 @@ ConfigParser::~ConfigParser()
 }
 
 /* See description in header file. */
- ConfigParser::GetConfigParserWithParams(int argc, char** argv)
+ConfigParserPtr ConfigParser::GetConfigParserWithParams(int argc, char** argv)
 {
     //XXX: Implement this!
     if (!gConfigParser)
     {
-        gConfigParser = new ConfigParser();
+        gConfigParser.reset( new ConfigParser());
     }
     if (gConfigParser && !gConfigParser->m_valid)
     {

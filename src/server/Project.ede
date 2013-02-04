@@ -7,8 +7,8 @@
    (ede-proj-target-makefile-program "server"
     :name "server"
     :path ""
-    :source '("Server.cpp" "DBThread.cpp" "WorkerThread.cpp" "MessageProcessor.cpp" "HashTable.cpp" "ConfigParser.cpp" "AccountManager.cpp")
-    :auxsource '("DBThread.h" "Thread.h" "WorkerThread.h" "ThreadPool.h" "MessageProcessor.h" "Pool.h" "HashTable.h" "CommandHandlerAggregator.h" "ConfigParser.h" "AccountManager.h")
+    :source '("Server.cpp" "DBThread.cpp" "WorkerThread.cpp" "MessageProcessor.cpp" "HashTable.cpp" "ConfigParser.cpp" "AccountManager.cpp" "KVDB.cpp" "AccountRequest.cpp")
+    :auxsource '("DBThread.h" "Thread.h" "WorkerThread.h" "ThreadPool.h" "MessageProcessor.h" "Pool.h" "HashTable.h" "CommandHandlerAggregator.h" "ConfigParser.h" "AccountManager.h" "KVDB.h" "List.h" "AccountRequest.h")
     :configuration-variables 'nil
     )
    (ede-proj-target-makefile-program "test"
