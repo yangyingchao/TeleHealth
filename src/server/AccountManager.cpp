@@ -1,6 +1,5 @@
 #include "SmartPointer.h"
 #include "AccountManager.h"
-#include "AccountRequest.h"
 #include "LFList.h"
 #include "Pool.h"
 #include <vector>
@@ -8,7 +7,6 @@
 #include <sys/select.h>
 #include <unistd.h>
 #include "KVDB.h"
-#include "AccountRequest.h"
 
 static const int MaxPipes   = 64;
 static const char* FakePath = "/tmp/Accounts/";
@@ -21,6 +19,7 @@ LF_List      g_accountRequests;
 LF_List      g_writablePipes;
 vector<int> g_readablePipes;
 
+// Functor to add a fd into select.
 struct AddPipeFunctor
 {
     AddPipeFunctor(fd_set* set, int* maxFd)
@@ -44,6 +43,26 @@ struct AddPipeFunctor
 
     fd_set* m_set;
     int*    m_maxFd;
+};
+
+
+typedef enum _account_requestType
+{
+    ART_CREATE = 0,
+    ART_UPDATE,
+    ART_GET,
+    ART_DELETE,
+    ART_INVALID,
+} account_requestType;
+
+struct account_request
+{
+    account_request() : type(ART_INVALID), result(false) {}
+
+    account_requestType type;
+    int               pipe[2];
+    KVPair            kv;
+    bool              result;
 };
 
 
@@ -112,12 +131,7 @@ void* account_manager_thread(void* data)
                         }
                         case ART_GET:
                         {
-                            kv_entry* value = db->GetValue(p->first);
-                            if (value)
-                            {
-                                p->second = value;
-                                req->result = true;
-                            }
+                            req->result = db->GetValue(p->first, p->second);
                             break;
                         }
                         case ART_DELETE:
@@ -141,6 +155,7 @@ void* account_manager_thread(void* data)
         }
         else // Just timeout, will start it again
         {
+            ;
         }
     }
     return NULL;

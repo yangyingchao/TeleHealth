@@ -1,15 +1,13 @@
 #ifndef _KVDB_H_
 #define _KVDB_H_
 
-#include "typedefs.h"
+#include <string>
 
+using namespace std;
 
-typedef struct _kv_entry
-{
-    uint32 size;
-    uint8  data[0];
-} kv_entry;
-
+//            key,     value
+// Value would be a string which is dumped from google protocol buffer.
+typedef pair<string, string> KVPair;
 
 class KVDB
 {
@@ -22,10 +20,10 @@ public:
         KVDB_Invalid,
     } KVDB_Type;
 
-    virtual bool DeleteRecord(uint32 key) = 0;
-    virtual kv_entry* GetValue(uint32 key) = 0;
-    virtual bool UpdateValue(uint32 key, kv_entry* value) = 0;
-    virtual bool AddKVPair(uint32 key, kv_entry* value) = 0;
+    virtual bool AddKVPair(const string& key, const string& value)   = 0;
+    virtual bool DeleteRecord(const string& key)                     = 0;
+    virtual bool GetValue(const string& key, string& value)          = 0;
+    virtual bool UpdateValue(const string& key, const string& value) = 0;
 
     static KVDB* GetInstance(KVDB_Type type, const char* path);
 };
