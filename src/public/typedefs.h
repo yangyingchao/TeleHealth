@@ -1,6 +1,8 @@
 #ifndef _TYPEDEFS_H_
 #define _TYPEDEFS_H_
 
+#include <stdlib.h>
+
 typedef  signed long int int32;         /* Signed 32 bit value */
 typedef  unsigned int	 uint32;        /* Unsigned 32 bit value */
 typedef  unsigned short  uint16;        /* Unsigned 16 bit value */

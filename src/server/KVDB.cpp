@@ -4,5 +4,5 @@
 KVDB* KVDB::GetInstance(KVDB_Type type, const char* path)
 {
     //XXX: Implement this!
-    return KVDBPtr();
+    return NULL;
 }

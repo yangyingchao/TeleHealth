@@ -3,10 +3,12 @@
 #include "AccountRequest.h"
 #include "LFList.h"
 #include "Pool.h"
-#include <vector.h>
+#include <vector>
 #include <pthread.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include "KVDB.h"
+#include "AccountRequest.h"
 
 static const int MaxPipes   = 64;
 static const char* FakePath = "/tmp/Accounts/";
@@ -15,11 +17,11 @@ static bool ShouldStop = false; // TODO: use local socket to control thread!
 
 pthread_t g_managerThread;
 
-LFList      g_accountRequests;
-LFList      g_writablePipes;
+LF_List      g_accountRequests;
+LF_List      g_writablePipes;
 vector<int> g_readablePipes;
 
-typedef struct _AddPipeFunctor
+struct AddPipeFunctor
 {
     AddPipeFunctor(fd_set* set, int* maxFd)
             : m_set(set),
@@ -31,7 +33,7 @@ typedef struct _AddPipeFunctor
         }
     }
 
-    void operator(int fd)
+    void operator()(int fd)
     {
         if (m_set && m_maxFd)
         {
@@ -42,7 +44,7 @@ typedef struct _AddPipeFunctor
 
     fd_set* m_set;
     int*    m_maxFd;
-} AddPipeFunctor;
+};
 
 
 //TODO: Add a AF_UNIX socket to control this thread!
@@ -53,7 +55,7 @@ void* account_manager_thread(void* data)
     KVDB* db = static_cast<KVDB*>(data);
     if (!db || g_readablePipes.empty())
     {
-        return;
+        return NULL;
     }
 
 
@@ -90,8 +92,8 @@ void* account_manager_thread(void* data)
             }
 
             // Now get requests one by one, and process them.
-            AccountRequest* req = NULL;
-            while ((req = g_accountRequests.DeQueue()) != NULL)
+            account_request* req = NULL;
+            while ((req = static_cast<account_request*>(g_accountRequests.DeQueue())) != NULL)
             {
                 if (req)
                 {
@@ -100,27 +102,27 @@ void* account_manager_thread(void* data)
                     {
                         case ART_CREATE:
                         {
-                            req->result = db->AddKVPair(p->first, &p->second);
+                            req->result = db->AddKVPair(p->first, p->second);
                             break;
                         }
                         case ART_UPDATE:
                         {
-                            req->result = db->UpdateValue(p->first, &p->second);
+                            req->result = db->UpdateValue(p->first, p->second);
                             break;
                         }
                         case ART_GET:
                         {
-                            value_entry* value = db->GetValue(p->first);
+                            kv_entry* value = db->GetValue(p->first);
                             if (value)
                             {
                                 p->second = value;
-                                p->result = true;
+                                req->result = true;
                             }
                             break;
                         }
                         case ART_DELETE:
                         {
-                            p->reset = db->DeleteRecord(p->first);
+                            req->result = db->DeleteRecord(p->first);
                             break;
                         }
                         default:
@@ -129,7 +131,7 @@ void* account_manager_thread(void* data)
                         }
                     }
 
-                    write(req->pipe[1], 'w', 1); // Notify listener.
+                    write(req->pipe[1], "w", 1); // Notify listener.
                 }
             }
         }
@@ -156,14 +158,14 @@ bool InilializeAccountManager(const char* path)
     for (int i = 0; i < MaxPipes; ++i)
     {
         int p[2];
-        if (pipe(pipes) == 0)
+        if (pipe(p) == 0)
         {
             g_readablePipes.push_back(p[0]);
-            g_writablePipes.EnQueue(p[1]);
+            g_writablePipes.EnQueue((void*)p[1]);
         }
     }
 
-    KVDB* db = KVDB::GetInstance(KVDB_Fake, path);
+    KVDB* db = KVDB::GetInstance(KVDB::KVDB_Fake, path);
 
     if (!pthread_create(&g_managerThread, NULL, account_manager_thread, db))
     {
