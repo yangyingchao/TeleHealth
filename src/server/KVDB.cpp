@@ -1,8 +1,27 @@
 #include "KVDB.h"
+#include "Utils.h"
+#include "KVDBImplLevelDB.h"
 
 /* See description in header file. */
 KVDB* KVDB::GetInstance(KVDB_Type type, const char* path)
 {
-    //XXX: Implement this!
-    return NULL;
+    KVDB* db = NULL;
+    if (path && strlen(path) && MakeDirectoryEx(GetDirectorName(path)))
+    {
+        switch (type)
+        {
+            case KVDB_LevelDb:
+            {
+                db = new LevelDB(path);
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+    }
+
+    return db;
 }

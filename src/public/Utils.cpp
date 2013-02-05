@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <libgen.h>
 
 #ifdef __APPLE__
 #include <uuid/uuid.h>
@@ -91,4 +92,38 @@ bool MakeDirectory(const char* path)
 #else
     return (mkdir(path, 777) == 0);
 #endif
+}
+
+bool MakeDirectoryEx(const char* path)
+{
+    char cmd[256] = {'\0'};
+    sprintf(cmd, "mkdir -p %s", path);
+    return system(cmd) == 0 ? true : false;
+}
+
+bool MakeDirectoryEx(const string& path)
+{
+    return MakeDirectoryEx(path.c_str());
+}
+
+
+string GetDirectorName(const char* path)
+{
+    string pname;
+    if (path)
+    {
+        char* tmp = strdup(path);
+        char* p = dirname(tmp);
+        if (p)
+        {
+            pname = p;
+        }
+        free(tmp);
+    }
+    return pname;
+}
+
+string GetDirectorName(const string& path)
+{
+    return GetDirectorName(path.c_str());
 }

@@ -53,7 +53,7 @@ THMessagePtr MessageProcessor::ProcessMessage(THMessagePtr msg)
         HandlerMap::iterator iter = MessageProcessor::m_commandHandlers.find(cmd);
         if (iter != MessageProcessor::m_commandHandlers.end() && iter->second)
         {
-            rsp = iter->second(msg, NULL);
+            rsp = iter->second(msg, m_privateData);
             err = EC_OK;
         }
         else
@@ -98,4 +98,24 @@ THMessagePtr MessageProcessor::GenericErrorResponse(MessageHeaderPtr header, Err
     rsp->SetMessageHeader(newHeader);
 
     return  rsp;
+}
+
+
+// Implementation of Private data of MessageProcessor.
+/* See description in header file. */
+MsgPrsPrivate::MsgPrsPrivate()
+{
+}
+
+/* See description in header file. */
+MsgPrsPrivate::~MsgPrsPrivate()
+{
+    Reset();
+}
+
+/* See description in header file. */
+void MsgPrsPrivate::Reset()
+{
+    m_errMsg.clear();
+    m_account.reset();
 }

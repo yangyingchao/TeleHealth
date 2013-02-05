@@ -17,6 +17,7 @@ public:
     typedef enum _KVDB_Type
     {
         KVDB_Fake = 0,
+        KVDB_LevelDb,
         KVDB_Invalid,
     } KVDB_Type;
 

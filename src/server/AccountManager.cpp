@@ -162,6 +162,7 @@ void* account_manager_thread(void* data)
 }
 
 // TODO:
+
 // Load account info into memory.
 bool InilializeAccountManager(const char* path)
 {
@@ -191,13 +192,18 @@ bool InilializeAccountManager(const char* path)
 }
 
 
-bool IsAccountExsited()
+bool IsAccountExsited(Account* account)
 {
     bool result = false;
     return result;
 }
 
-bool IsAccountValid()
+bool RegisterAccount(Account* account)
+{
+    return false;
+}
+
+bool IsAccountValid(Account* account)
 {
     bool result = false;
     return result;

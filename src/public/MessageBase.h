@@ -4,6 +4,7 @@
 #include "typedefs.h"
 #include "SmartPointer.h"
 #include "THMessage.pb.h"
+#include "DataBlob.h"
 
 const uint8 TMP_FLAG = 1;
 
@@ -12,8 +13,10 @@ const uint8 TMP_FLAG = 1;
 typedef shared_ptr<MessageHeader> MessageHeaderPtr;
 typedef shared_ptr<google::protobuf::Message> MessagePtr;
 
-class DataBlob;
+
 typedef shared_ptr<DataBlob> DataBlobPtr;
+
+extern const int SIZEOFINT16;
 
 /** This should be treat as raw message, packet headers need to be added when transport. */
 class THMessage
@@ -43,8 +46,8 @@ private:
 
     MessageHeaderPtr m_pHeader;         // Here we know how this header looks like.
     MessagePtr       m_pBodyMessage;    // But we don't know the real Message.
-    DataBlobPtr      m_pBodyBlob;       // So we put serialized data into this blob.
-    DataBlobPtr      m_pHeaderBlob;     // First 2 bytes are size of this header.
+    DataBlobPtr      m_pBodyBlob;       // So we put serialized data into m_pBodyBlob, and
+    DataBlobPtr      m_pHeaderBlob;     // first 2 bytes are size of this header.
 };
 
 

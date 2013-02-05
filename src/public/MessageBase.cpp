@@ -2,7 +2,7 @@
 #include "DataBlob.h"
 #include "LogUtils.h"
 
-static const int SIZEOFINT16 = sizeof(int16);
+const int SIZEOFINT16 = sizeof(int16);
 
 
 /**
