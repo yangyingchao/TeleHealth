@@ -14948,7 +14948,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 # End the configure script.
-ac_config_files="$ac_config_files Makefile src/Makefile src/test/Makefile src/server/Makefile src/public/Makefile src/public/ProtocolBuffer/Makefile src/client/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile src/test/Makefile src/server/Makefile src/server/unittest/Makefile src/public/Makefile src/public/ProtocolBuffer/Makefile src/client/Makefile"
 
 ac_config_commands="$ac_config_commands default"
 
@@ -16063,6 +16063,7 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/test/Makefile") CONFIG_FILES="$CONFIG_FILES src/test/Makefile" ;;
     "src/server/Makefile") CONFIG_FILES="$CONFIG_FILES src/server/Makefile" ;;
+    "src/server/unittest/Makefile") CONFIG_FILES="$CONFIG_FILES src/server/unittest/Makefile" ;;
     "src/public/Makefile") CONFIG_FILES="$CONFIG_FILES src/public/Makefile" ;;
     "src/public/ProtocolBuffer/Makefile") CONFIG_FILES="$CONFIG_FILES src/public/ProtocolBuffer/Makefile" ;;
     "src/client/Makefile") CONFIG_FILES="$CONFIG_FILES src/client/Makefile" ;;

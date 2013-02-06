@@ -1,3 +1,20 @@
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
+
+#include "TestKVDB.h"
+
+int main()
+{
+    CppUnit::TextUi::TestRunner runner;
+
+    CppUnit::TestFactoryRegistry &registry =
+            CppUnit::TestFactoryRegistry::getRegistry("testKVDB");
+    runner.addTest( registry.makeTest() );
+
+    runner.run();
+}
+
+#if 0
 #include "Socket.h"
 #include <netdb.h>
 #include <stdio.h>
@@ -13,6 +30,7 @@
 
 #define BUF_SIZE 500
 
+// TODO: Remove this ifdef!
 int
 main(int argc, char *argv[])
 {
@@ -72,4 +90,6 @@ main(int argc, char *argv[])
 
     exit(EXIT_SUCCESS);
 }
+
+#endif // End of #if 0
 

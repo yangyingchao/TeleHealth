@@ -1,0 +1,19 @@
+;; Object UnitTest
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "UnitTest"
+  :file "Project.ede"
+  :name "UnitTest"
+  :targets (list
+   (ede-proj-target-makefile-program "test"
+    :name "test"
+    :path ""
+    :source '("main.cpp" "TestKVDB.cpp")
+    :auxsource '("TestKVDB.h" "TestMacros.h")
+    :configuration-variables 'nil
+    :ldflags '("-lcppunit" "-lleveldb" "-lthpub")
+    )
+   )
+  :makefile-type 'Makefile.am
+  :variables '(("AM_LDFLAGS" . "-L../../public") ("AM_CPPFLAGS" . "-I../../public"))
+  :configuration-variables 'nil
+  )

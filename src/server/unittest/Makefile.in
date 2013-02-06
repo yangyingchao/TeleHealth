@@ -50,8 +50,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = server$(EXEEXT)
-subdir = src/server
+bin_PROGRAMS = test$(EXEEXT)
+subdir = src/server/unittest
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -64,13 +64,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_server_OBJECTS = Server.$(OBJEXT) DBThread.$(OBJEXT) \
-	WorkerThread.$(OBJEXT) MessageProcessor.$(OBJEXT) \
-	HashTable.$(OBJEXT) ConfigParser.$(OBJEXT) \
-	AccountManager.$(OBJEXT) KVDB.$(OBJEXT) \
-	KVDBImplLevelDB.$(OBJEXT)
-server_OBJECTS = $(am_server_OBJECTS)
-server_DEPENDENCIES =
+am_test_OBJECTS = main.$(OBJEXT) TestKVDB.$(OBJEXT)
+test_OBJECTS = $(am_test_OBJECTS)
+test_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -84,8 +80,8 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(server_SOURCES)
-DIST_SOURCES = $(server_SOURCES)
+SOURCES = $(test_SOURCES)
+DIST_SOURCES = $(test_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -258,14 +254,14 @@ top_srcdir = @top_srcdir@
 # EDE is the Emacs Development Environment.
 # http://cedet.sourceforge.net/ede.shtml
 #
-AM_LDFLAGS = -lprotobuf -lz  -lzmq -pthread -lthpub -L../public -lsqlite3 -lleveldb
-AM_CPPFLAGS = -DDEBUG -I../public -I../public/generated/c
-top = ../../
+AM_LDFLAGS = -L../../public
+AM_CPPFLAGS = -I../../public
+top = ../../../
 ede_FILES = Project.ede Makefile.am
-SUBDIRS = unittest/
+SUBDIRS = 
 EXTRA_DIST = Project.ede
-server_SOURCES = Server.cpp DBThread.cpp WorkerThread.cpp MessageProcessor.cpp HashTable.cpp ConfigParser.cpp AccountManager.cpp KVDB.cpp KVDBImplLevelDB.cpp
-server_LDADD = 
+test_SOURCES = main.cpp TestKVDB.cpp
+test_LDADD = -lcppunit -lleveldb -lthpub
 all: all-recursive
 
 .SUFFIXES:
@@ -279,9 +275,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/server/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/server/unittest/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/server/Makefile
+	  $(AUTOMAKE) --gnu src/server/unittest/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -346,9 +342,9 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-server$(EXEEXT): $(server_OBJECTS) $(server_DEPENDENCIES) $(EXTRA_server_DEPENDENCIES) 
-	@rm -f server$(EXEEXT)
-	$(CXXLINK) $(server_OBJECTS) $(server_LDADD) $(LIBS)
+test$(EXEEXT): $(test_OBJECTS) $(test_DEPENDENCIES) $(EXTRA_test_DEPENDENCIES) 
+	@rm -f test$(EXEEXT)
+	$(CXXLINK) $(test_OBJECTS) $(test_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -356,15 +352,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AccountManager.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ConfigParser.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DBThread.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HashTable.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KVDB.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KVDBImplLevelDB.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageProcessor.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorkerThread.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestKVDB.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

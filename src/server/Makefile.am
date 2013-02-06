@@ -11,12 +11,10 @@ AM_CPPFLAGS=-DDEBUG -I../public -I../public/generated/c
 top=../../
 ede_FILES=Project.ede Makefile.am
 
-SUBDIRS= 
+SUBDIRS= unittest/
 EXTRA_DIST=Project.ede
-bin_PROGRAMS=server test
+bin_PROGRAMS=server
 server_SOURCES=Server.cpp DBThread.cpp WorkerThread.cpp MessageProcessor.cpp HashTable.cpp ConfigParser.cpp AccountManager.cpp KVDB.cpp KVDBImplLevelDB.cpp
-test_SOURCES=TestServer.cpp
 server_LDADD=
-test_LDADD=
 
 # End of Makefile.am

@@ -1,7 +1,7 @@
 #ifndef _TESTSQLITE_H_
 #define _TESTSQLITE_H_
 
-#include "cppunit/extensions/HelperMacros.h"
+#include <cppunit/extensions/HelperMacros.h>
 
 class TestSqlite : public CppUnit::TestFixture
 {

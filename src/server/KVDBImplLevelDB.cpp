@@ -42,6 +42,11 @@ bool LevelDB::GetValue(const string& key, string& value)
 /* See description in header file. */
 bool LevelDB::UpdateValue(const string& key, const string& value)
 {
-    //XXX: Do we need to delete it before adding new entry?
-    return AddKVPair(key, value);
+    bool result = false;
+    string value1;
+    if (GetValue(key, value1))
+    {
+        result = AddKVPair(key, value);
+    }
+    return result;
 }

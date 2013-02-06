@@ -16,4 +16,4 @@ AC_PROG_CXX
 AC_PROG_LIBTOOL
 
 # End the configure script.
-AC_OUTPUT(Makefile src/Makefile src/test/Makefile src/server/Makefile src/public/Makefile src/public/ProtocolBuffer/Makefile src/client/Makefile, [date > stamp-h] )
+AC_OUTPUT(Makefile src/Makefile src/test/Makefile src/server/Makefile src/server/unittest/Makefile src/public/Makefile src/public/ProtocolBuffer/Makefile src/client/Makefile, [date > stamp-h] )
