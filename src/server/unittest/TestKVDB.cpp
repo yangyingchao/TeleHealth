@@ -2,22 +2,32 @@
 #include "../KVDBImplLevelDB.cpp"
 #include "../KVDB.cpp"
 
+static const string TEST_KEY("key");
+static const string TEST_KEY2("key2");
+static const string TEST_VAL("val");
+static const string TEST_VAL2("val2");
+static const string EMPTY_STRING;
+
 /* See description in header file. */
 TestKVDB::TestKVDB()
+        : m_db(NULL)
 {
-    //XXX: Implement this!
 }
 
 /* See description in header file. */
 TestKVDB::~TestKVDB()
 {
-    //XXX: Implement this!
 }
 
 /* See description in header file. */
 void TestKVDB::setUp()
 {
+    int ret = system("rm -rf /tmp/test.db");
+
+    CPPUNIT_ASSERT_EQUAL(ret, 0);
+
     m_db = KVDB::GetInstance(KVDB::KVDB_LevelDb, "/tmp/test.db");
+
     CPPUNIT_ASSERT_NOT_NULL(m_db);
 }
 
@@ -33,48 +43,45 @@ void TestKVDB::tearDown()
 /* See description in header file. */
 void TestKVDB::TestAddEntry()
 {
-    cout << "Variable = " << m_db << endl;
+    bool result = m_db->AddKVPair(TEST_KEY, TEST_VAL);
+    CPPUNIT_ASSERT(result);
 }
 
 /* See description in header file. */
 void TestKVDB::TestAddDupilicatedEntry()
 {
-    cout << "Variable = " << m_db << endl;
+    CPPUNIT_ASSERT(m_db->AddKVPair(TEST_KEY, TEST_VAL));
+    CPPUNIT_ASSERT(!m_db->AddKVPair(TEST_KEY, TEST_VAL));
 }
 
 /* See description in header file. */
 void TestKVDB::TestDeleteEntry()
 {
-    cout << "Variable = " << m_db << endl;
-    //XXX: Implement this!
-}
-
-/* See description in header file. */
-void TestKVDB::TestDeleteEmptyEntry()
-{
-    cout << "Variable = " << m_db << endl;
-    //XXX: Implement this!
+    CPPUNIT_ASSERT(m_db->AddKVPair(TEST_KEY, TEST_VAL));
+    CPPUNIT_ASSERT(m_db->DeleteKVPair(TEST_KEY));
+    CPPUNIT_ASSERT_EQUAL(m_db->DeleteKVPair(EMPTY_STRING), false);
 }
 
 /* See description in header file. */
 void TestKVDB::TestGetEntry()
 {
-    cout << "Variable = " << m_db << endl;
-    //XXX: Implement this!
+    CPPUNIT_ASSERT(m_db->AddKVPair(TEST_KEY, TEST_VAL));
+    string val;
+    CPPUNIT_ASSERT(m_db->GetValue(TEST_KEY, val));
+    CPPUNIT_ASSERT(!val.empty() && val == TEST_VAL);
 }
 
 /* See description in header file. */
 void TestKVDB::TestUpdateEntry()
 {
-    cout << "Variable = " << m_db << endl;
-    //XXX: Implement this!
+    CPPUNIT_ASSERT(m_db->AddKVPair(TEST_KEY, TEST_VAL));
+    CPPUNIT_ASSERT(m_db->UpdateValue(TEST_KEY, TEST_VAL2));
 }
 
 /* See description in header file. */
 void TestKVDB::TestUpdateNonexistEntry()
 {
-    cout << "Variable = " << m_db << endl;
-    //XXX: Implement this!
+    CPPUNIT_ASSERT(!m_db->UpdateValue(TEST_KEY2, TEST_VAL2));
 }
 
-CPPUNIT_TEST_SUITE_NAMED_REGISTRATION( TestKVDB, "TestKVDB" );
+CPPUNIT_TEST_SUITE_REGISTRATION(TestKVDB);

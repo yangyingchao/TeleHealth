@@ -136,7 +136,7 @@ void* account_manager_thread(void* data)
                         }
                         case ART_DELETE:
                         {
-                            req->result = db->DeleteRecord(p->first);
+                            req->result = db->DeleteKVPair(p->first);
                             break;
                         }
                         default:

@@ -1,17 +1,33 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/TestResult.h>
+#include <cppunit/TestResultCollector.h>
+#include <cppunit/TestRunner.h>
 
-#include "TestKVDB.h"
+#include "TestMacros.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-    CppUnit::TextUi::TestRunner runner;
+    string testPath = (argc > 1) ? std::string(argv[1]) : "";
 
-    CppUnit::TestFactoryRegistry &registry =
-            CppUnit::TestFactoryRegistry::getRegistry("testKVDB");
-    runner.addTest( registry.makeTest() );
+    // Add customized listener.
+    VerboseTextProgressListener progress;
+
+    //
+    TestFactoryRegistry &registry = TestFactoryRegistry::getRegistry();
+    Test* test =  registry.makeTest();
+
+    TextTestRunner runner;
+    runner.eventManager().addListener(&progress);
+
+    runner.addTest(test);
 
     runner.run();
+
+    TestResultCollector& result = runner.result();
+
+    return result.wasSuccessful() ? 0 : 1;
 }
 
 #if 0
@@ -25,7 +41,7 @@ int main()
 #include "StringUtils.hpp"
 #include "MessageBase.h"
 
-#define handle_error(msg) \
+#define handle_error(msg)                               \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 #define BUF_SIZE 500
@@ -92,4 +108,3 @@ main(int argc, char *argv[])
 }
 
 #endif // End of #if 0
-

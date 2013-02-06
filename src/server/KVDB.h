@@ -22,7 +22,7 @@ public:
     } KVDB_Type;
 
     virtual bool AddKVPair(const string& key, const string& value)   = 0;
-    virtual bool DeleteRecord(const string& key)                     = 0;
+    virtual bool DeleteKVPair(const string& key)                     = 0;
     virtual bool GetValue(const string& key, string& value)          = 0;
     virtual bool UpdateValue(const string& key, const string& value) = 0;
 

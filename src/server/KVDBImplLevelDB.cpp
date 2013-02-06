@@ -12,6 +12,11 @@ LevelDB::LevelDB(const char* name)
     Options options;
     options.create_if_missing = true;
     m_status = leveldb::DB::Open(options, m_dbName, &m_db);
+
+    if (!m_status.ok())
+    {
+        printf("Error while creating LevelDB: %s\n", m_status.ToString().c_str());
+    }
     assert(m_status.ok());
 }
 
@@ -24,11 +29,17 @@ LevelDB::~LevelDB()
 /* See description in header file. */
 bool LevelDB::AddKVPair(const string& key, const string& value)
 {
-    return (key.empty() || value.empty()) ? false : m_db->Put(m_writeOption, key, value).ok();
+    bool result = false;
+    string value1;
+    if (!GetValue(key, value1))
+    {
+        result = AddKVPairInternal(key, value);
+    }
+    return result;
 }
 
 /* See description in header file. */
-bool LevelDB::DeleteRecord(const string& key)
+bool LevelDB::DeleteKVPair(const string& key)
 {
     return key.empty() ? false : m_db->Delete(m_writeOption, key).ok();
 }
@@ -46,7 +57,13 @@ bool LevelDB::UpdateValue(const string& key, const string& value)
     string value1;
     if (GetValue(key, value1))
     {
-        result = AddKVPair(key, value);
+        result = AddKVPairInternal(key, value);
     }
     return result;
+}
+
+/* See description in header file. */
+bool LevelDB::AddKVPairInternal(const string& key, const string& value)
+{
+    return (key.empty() || value.empty()) ? false : m_db->Put(m_writeOption, key, value).ok();
 }

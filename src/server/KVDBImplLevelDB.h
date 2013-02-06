@@ -13,11 +13,13 @@ public:
     virtual ~LevelDB();
 
     virtual bool AddKVPair(const string& key, const string& value);
-    virtual bool DeleteRecord(const string& key);
+    virtual bool DeleteKVPair(const string& key);
     virtual bool GetValue(const string& key, string& value);
     virtual bool UpdateValue(const string& key, const string& value);
 
 private:
+
+    bool AddKVPairInternal(const string& key, const string& value);
     string          m_dbName;
     leveldb::DB*    m_db;
     leveldb::Status m_status;

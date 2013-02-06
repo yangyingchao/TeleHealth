@@ -13,7 +13,6 @@ class TestKVDB : public CppUnit::TestFixture
     CPPUNIT_TEST(TestAddEntry);
     CPPUNIT_TEST(TestAddDupilicatedEntry);
     CPPUNIT_TEST(TestDeleteEntry);
-    CPPUNIT_TEST(TestDeleteEmptyEntry);
     CPPUNIT_TEST(TestGetEntry);
     CPPUNIT_TEST(TestUpdateEntry);
     CPPUNIT_TEST(TestUpdateNonexistEntry);
@@ -44,8 +43,6 @@ public:
 
     void TestDeleteEntry();
 
-    void TestDeleteEmptyEntry();
-
     void TestGetEntry();
 
     void TestUpdateEntry();
@@ -54,6 +51,7 @@ public:
 
 private:
     KVDB* m_db;
+
 };
 
 #endif /* _TESTKVDB_H_ */

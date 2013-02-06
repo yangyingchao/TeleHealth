@@ -5,7 +5,7 @@
 # EDE is the Emacs Development Environment.
 # http://cedet.sourceforge.net/ede.shtml
 #
-AM_LDFLAGS=-L../../public
+AM_LDFLAGS=-L../../public -lprotobuf
 AM_CPPFLAGS=-I../../public
 
 top=../../../
