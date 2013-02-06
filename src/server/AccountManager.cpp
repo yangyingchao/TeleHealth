@@ -198,13 +198,24 @@ bool IsAccountExsited(Account* account)
     return result;
 }
 
-bool RegisterAccount(Account* account)
+AM_Error RegisterAccount(Account* account)
 {
-    return false;
+
+    return AE_OK;
 }
 
 bool IsAccountValid(Account* account)
 {
     bool result = false;
     return result;
+}
+
+static const char* AM_ErrorMessages[] =
+{
+    "Succeeded", "Invalid Request", "Account already existed", NULL,
+};
+
+const char* AM_ErrorStringify(AM_Error errCode)
+{
+    return errCode < AE_MAX ? AM_ErrorMessages[(int)errCode] : NULL;
 }

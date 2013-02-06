@@ -38,16 +38,14 @@ THMessagePtr zzz_RegisterAccountCommandHandler(THMessagePtr msg, MsgPrsPrivate& 
             break;
         }
 
-        // Check if account already exist or not.
-        if (IsAccountExsited(account))
+        AM_Error err = RegisterAccount(account);
+        if (err)
         {
-            errMsg = "Another account with same email has been registered.";
-            break;
-        }
-
-        if (RegisterAccount(account))
-        {
-            errMsg = "Failed to register account, internal error!";
+            const char* msg = AM_ErrorStringify(err);
+            if (msg)
+            {
+                errMsg = msg;
+            }
             break;
         }
 
