@@ -1,32 +1,65 @@
 #ifndef _THREADPOOL_H_
 #define _THREADPOOL_H_
 
-#include <stack>
-
+#include "Pool.h"
 using namespace std;
 
-class ThreadParam;
-class WorkerThread;
+#define CAP_THREADS       64
 
+class ThreadParam;
+
+template <class T>
 class ThreadPool
 {
 public:
-    virtual ~ThreadPool();
+    virtual ~ThreadPool()
+    {
+    }
 
-    static ThreadPool* GetInstance();
+    // Just use it as simple factory.
+    static ThreadPool* GetInstance(int chunkSize = CAP_THREADS)
+    {
+        return NEW ThreadPool<T>(chunkSize);
+    }
 
-    ThreadParam* BorrowThread();
-    void ReturnThread(WorkerThread* thread);
+    T* BorrowThread()
+    {
+        return m_pObjectPool ? (T*)m_pObjectPool->GetObject() : NULL;
+    }
 
-    void CleanUp();
+    void ReturnThread(T* thread)
+    {
+        if (m_pObjectPool)
+        {
+            m_pObjectPool->PutObject(thread);
+        }
+    }
+
+    void CleanUp()
+    {
+    }
 
 private:
-    ThreadPool();
+    ThreadPool(int chunkSize)
+    {
+        m_pObjectPool = ObjectPool<T>::GetPool(chunkSize,
+                                               &ThreadPool::ObjectPoolCallback,
+                                               this);
+    }
 
-    static ThreadPool* m_instance;
+    static bool ObjectPoolCallback(T* obj, void* data)
+    {
+        bool result = false;
+        if (obj && data)
+        {
+            obj->SetThreadPool((ThreadPool*)data);
+            obj->Start();
+            result = true;
+        }
+        return  result;;
+    }
 
-    stack<WorkerThread*> m_freeList;
-    WorkerThread* m_threads;
+    ObjectPool<T>* m_pObjectPool;
 };
 
 #endif /* _THREADPOOL_H_ */

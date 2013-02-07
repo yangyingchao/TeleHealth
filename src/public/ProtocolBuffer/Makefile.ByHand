@@ -1,7 +1,7 @@
 OUTDIR=../generated
 C_OUTDIR=../generated/c
 PY_OUTDIR=../generated/python
-TARGETS=MessageHeader.proto THMessage.proto DBTables.proto
+TARGETS=*.proto
 
 default: all
 

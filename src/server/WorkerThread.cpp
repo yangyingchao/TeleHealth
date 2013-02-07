@@ -114,7 +114,7 @@ void WorkerThread::DoRealWorks()
 
         while (true)
         {
-            shared_ptr<Message> msg = sock->Receive();
+            THMessagePtr msg = sock->Receive();
             if (!msg)
             {
                 m_param.m_busy = false;
@@ -128,7 +128,7 @@ void WorkerThread::DoRealWorks()
             }
 
             // TODO: Add real work here.
-            MessagePtr rsp = HandleRequest(msg);
+            THMessagePtr rsp = HandleRequest(msg);
 
             // Send it back to client;
             int n = sock->Send(rsp);
@@ -136,26 +136,62 @@ void WorkerThread::DoRealWorks()
     }
 }
 
-/* See description in header file. */
-void WorkerThread::SetThreadPool(ThreadPool* pool)
-{
-    m_pPool = pool;
-}
 
 /* See description in header file. */
-MessagePtr WorkerThread::HandleRequest(const MessagePtr& request)
+THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
 {
-    MessagePtr rsp;
+    THMessagePtr rsp;
+    MessageHeaderPtr header = request ? request->GetMessageHeader() : MessageHeaderPtr();
 
-    if (request && request->has_data())
+    // TODO: Finish error handling here.
+    if (!header)
     {
-        cout << "**********\t\tReceived data: "
-             << request->data().c_str() << endl;
+        //
     }
-    // XXX: Implement this!!
+
+    if (header->has_version())
+    {
+        //TODO: Add version checking...
+        cout << "**********\t\tReceived data: "
+             << header->version().c_str() << endl;
+    }
+
+    if (!m_pMessageProcessor)
+    {
+        m_pMessageProcessor = MessageProcessor::GetInstance(header);
+    }
+
+    PDEBUG ("Processor: %p\n", m_pMessageProcessor);
+
+    if (m_pMessageProcessor)
+    {
+        rsp = m_pMessageProcessor->ProcessMessage(request);
+    }
+    else // TODO: reply error!
+    {
+        rsp.reset(new THMessage);
+        rsp->SetMessageHeader(header);
+        rsp->SetMessageBody(header);
+    }
 
     return rsp;
 }
 
+/* See description in header file. */
+bool WorkerThread::TakeOverSocket(Socket* sk)
+{
+    bool result = false;
+    if (sk)
+    {
+        m_param.m_sock = sk;
+        m_param.SignalAction();
+        result = true;
+    }
+    return  result;
+}
 
-
+/* See description in header file. */
+void WorkerThread::SetThreadPool(ThreadPool <WorkerThread>* pool)
+{
+    m_pPool = pool;
+}

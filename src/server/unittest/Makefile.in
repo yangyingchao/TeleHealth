@@ -51,7 +51,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = test$(EXEEXT)
-subdir = src/test
+subdir = src/server/unittest
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -64,9 +64,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_test_OBJECTS = TestSqlite.$(OBJEXT) main.$(OBJEXT) \
-	DataBase.$(OBJEXT) DataBaseSqlite.$(OBJEXT) \
-	TableComponent.$(OBJEXT) Utils.$(OBJEXT) DBTables.pb.$(OBJEXT)
+am_test_OBJECTS = main.$(OBJEXT) TestKVDB.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 test_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -81,15 +79,6 @@ LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(test_SOURCES)
 DIST_SOURCES = $(test_SOURCES)
@@ -265,18 +254,18 @@ top_srcdir = @top_srcdir@
 # EDE is the Emacs Development Environment.
 # http://cedet.sourceforge.net/ede.shtml
 #
-AM_CPPFLAGS = -I../public -I../public/DataBase -I../public/generated/c -I/usr/include/uuid 
-AM_LDFLAGS = -lprotobuf -lz  -lzmq -pthread -L../public -lsqlite3   -lcppunit
-top = ../../
+AM_LDFLAGS = -L../../public -lprotobuf -luuid
+AM_CPPFLAGS = -I../../public
+top = ../../../
 ede_FILES = Project.ede Makefile.am
 SUBDIRS = 
 EXTRA_DIST = Project.ede
-test_SOURCES = TestSqlite.cpp main.cpp ../public/DataBase.h ../public/DataBase/DataBase.cpp ../public/DataBase/DataBaseSqlite.cpp ../public/DataBase/DataBaseSqlite.h ../public/DataBase/TableComponent.cpp ../public/DataBase/TableComponent.h ../public/Utils.cpp ../public/generated/c/DBTables.pb.cc ../public/generated/c/DBTables.pb.h ../public/Utils.h
-test_LDADD = -luuid
+test_SOURCES = main.cpp TestKVDB.cpp
+test_LDADD = -lleveldb -lthpub -lcppunit
 all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .cc .cpp .lo .o .obj
+.SUFFIXES: .cpp .lo .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -286,9 +275,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/test/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/server/unittest/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/test/Makefile
+	  $(AUTOMAKE) --gnu src/server/unittest/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -363,104 +352,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DBTables.pb.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataBase.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataBaseSqlite.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TableComponent.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestSqlite.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestKVDB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
-
-.cc.o:
-@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
-
-.cc.obj:
-@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.cc.lo:
-@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
-
-DataBase.o: ../public/DataBase/DataBase.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DataBase.o -MD -MP -MF $(DEPDIR)/DataBase.Tpo -c -o DataBase.o `test -f '../public/DataBase/DataBase.cpp' || echo '$(srcdir)/'`../public/DataBase/DataBase.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DataBase.Tpo $(DEPDIR)/DataBase.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/DataBase/DataBase.cpp' object='DataBase.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DataBase.o `test -f '../public/DataBase/DataBase.cpp' || echo '$(srcdir)/'`../public/DataBase/DataBase.cpp
-
-DataBase.obj: ../public/DataBase/DataBase.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DataBase.obj -MD -MP -MF $(DEPDIR)/DataBase.Tpo -c -o DataBase.obj `if test -f '../public/DataBase/DataBase.cpp'; then $(CYGPATH_W) '../public/DataBase/DataBase.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/DataBase/DataBase.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DataBase.Tpo $(DEPDIR)/DataBase.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/DataBase/DataBase.cpp' object='DataBase.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DataBase.obj `if test -f '../public/DataBase/DataBase.cpp'; then $(CYGPATH_W) '../public/DataBase/DataBase.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/DataBase/DataBase.cpp'; fi`
-
-DataBaseSqlite.o: ../public/DataBase/DataBaseSqlite.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DataBaseSqlite.o -MD -MP -MF $(DEPDIR)/DataBaseSqlite.Tpo -c -o DataBaseSqlite.o `test -f '../public/DataBase/DataBaseSqlite.cpp' || echo '$(srcdir)/'`../public/DataBase/DataBaseSqlite.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DataBaseSqlite.Tpo $(DEPDIR)/DataBaseSqlite.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/DataBase/DataBaseSqlite.cpp' object='DataBaseSqlite.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DataBaseSqlite.o `test -f '../public/DataBase/DataBaseSqlite.cpp' || echo '$(srcdir)/'`../public/DataBase/DataBaseSqlite.cpp
-
-DataBaseSqlite.obj: ../public/DataBase/DataBaseSqlite.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DataBaseSqlite.obj -MD -MP -MF $(DEPDIR)/DataBaseSqlite.Tpo -c -o DataBaseSqlite.obj `if test -f '../public/DataBase/DataBaseSqlite.cpp'; then $(CYGPATH_W) '../public/DataBase/DataBaseSqlite.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/DataBase/DataBaseSqlite.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DataBaseSqlite.Tpo $(DEPDIR)/DataBaseSqlite.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/DataBase/DataBaseSqlite.cpp' object='DataBaseSqlite.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DataBaseSqlite.obj `if test -f '../public/DataBase/DataBaseSqlite.cpp'; then $(CYGPATH_W) '../public/DataBase/DataBaseSqlite.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/DataBase/DataBaseSqlite.cpp'; fi`
-
-TableComponent.o: ../public/DataBase/TableComponent.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TableComponent.o -MD -MP -MF $(DEPDIR)/TableComponent.Tpo -c -o TableComponent.o `test -f '../public/DataBase/TableComponent.cpp' || echo '$(srcdir)/'`../public/DataBase/TableComponent.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/TableComponent.Tpo $(DEPDIR)/TableComponent.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/DataBase/TableComponent.cpp' object='TableComponent.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o TableComponent.o `test -f '../public/DataBase/TableComponent.cpp' || echo '$(srcdir)/'`../public/DataBase/TableComponent.cpp
-
-TableComponent.obj: ../public/DataBase/TableComponent.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TableComponent.obj -MD -MP -MF $(DEPDIR)/TableComponent.Tpo -c -o TableComponent.obj `if test -f '../public/DataBase/TableComponent.cpp'; then $(CYGPATH_W) '../public/DataBase/TableComponent.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/DataBase/TableComponent.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/TableComponent.Tpo $(DEPDIR)/TableComponent.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/DataBase/TableComponent.cpp' object='TableComponent.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o TableComponent.obj `if test -f '../public/DataBase/TableComponent.cpp'; then $(CYGPATH_W) '../public/DataBase/TableComponent.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/DataBase/TableComponent.cpp'; fi`
-
-Utils.o: ../public/Utils.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Utils.o -MD -MP -MF $(DEPDIR)/Utils.Tpo -c -o Utils.o `test -f '../public/Utils.cpp' || echo '$(srcdir)/'`../public/Utils.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Utils.Tpo $(DEPDIR)/Utils.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/Utils.cpp' object='Utils.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Utils.o `test -f '../public/Utils.cpp' || echo '$(srcdir)/'`../public/Utils.cpp
-
-Utils.obj: ../public/Utils.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Utils.obj -MD -MP -MF $(DEPDIR)/Utils.Tpo -c -o Utils.obj `if test -f '../public/Utils.cpp'; then $(CYGPATH_W) '../public/Utils.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/Utils.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/Utils.Tpo $(DEPDIR)/Utils.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/Utils.cpp' object='Utils.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o Utils.obj `if test -f '../public/Utils.cpp'; then $(CYGPATH_W) '../public/Utils.cpp'; else $(CYGPATH_W) '$(srcdir)/../public/Utils.cpp'; fi`
-
-DBTables.pb.o: ../public/generated/c/DBTables.pb.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DBTables.pb.o -MD -MP -MF $(DEPDIR)/DBTables.pb.Tpo -c -o DBTables.pb.o `test -f '../public/generated/c/DBTables.pb.cc' || echo '$(srcdir)/'`../public/generated/c/DBTables.pb.cc
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DBTables.pb.Tpo $(DEPDIR)/DBTables.pb.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/generated/c/DBTables.pb.cc' object='DBTables.pb.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DBTables.pb.o `test -f '../public/generated/c/DBTables.pb.cc' || echo '$(srcdir)/'`../public/generated/c/DBTables.pb.cc
-
-DBTables.pb.obj: ../public/generated/c/DBTables.pb.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DBTables.pb.obj -MD -MP -MF $(DEPDIR)/DBTables.pb.Tpo -c -o DBTables.pb.obj `if test -f '../public/generated/c/DBTables.pb.cc'; then $(CYGPATH_W) '../public/generated/c/DBTables.pb.cc'; else $(CYGPATH_W) '$(srcdir)/../public/generated/c/DBTables.pb.cc'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DBTables.pb.Tpo $(DEPDIR)/DBTables.pb.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../public/generated/c/DBTables.pb.cc' object='DBTables.pb.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DBTables.pb.obj `if test -f '../public/generated/c/DBTables.pb.cc'; then $(CYGPATH_W) '../public/generated/c/DBTables.pb.cc'; else $(CYGPATH_W) '$(srcdir)/../public/generated/c/DBTables.pb.cc'; fi`
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

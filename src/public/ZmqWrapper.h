@@ -5,7 +5,7 @@
 #include <zmq.h>
 #include <zmq.hpp>
 
-typedef shared_ptr<zmq::message_t> ZMessagePtr;
+typedef shared_ptr<zmq::message_t> ZTHMessagePtr;
 
 
 #endif /* _ZMQWRAPPER_H_ */

@@ -91,9 +91,8 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libthpub_la_LIBADD =
-am_libthpub_la_OBJECTS = DataBase.lo MessageHeader.pb.lo \
-	THMessage.pb.lo DataBaseSqlite.lo TableComponent.lo Utils.lo \
-	DBTables.pb.lo Socket.lo SocketImplementation.lo
+am_libthpub_la_OBJECTS = DataBase.lo THMessage.pb.lo Utils.lo \
+	Socket.lo MessageBase.lo DataBlob.lo SocketTcp.lo SockUnix.lo
 libthpub_la_OBJECTS = $(am_libthpub_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -297,7 +296,7 @@ ede_FILES = Project.ede Makefile.am
 SUBDIRS = ProtocolBuffer/
 EXTRA_DIST = Project.ede
 lib_LTLIBRARIES = libthpub.la
-libthpub_la_SOURCES = DataBase.h StringUtils.hpp DataBase/DataBase.cpp generated/c/MessageHeader.pb.cc generated/c/MessageHeader.pb.h generated/c/THMessage.pb.cc generated/c/THMessage.pb.h DataBase/DataBaseSqlite.cpp DataBase/DataBaseSqlite.h DataBase/TableComponent.cpp DataBase/TableComponent.h Utils.cpp generated/c/DBTables.pb.cc generated/c/DBTables.pb.h Socket.cpp SocketImplementation.cpp
+libthpub_la_SOURCES = DataBase.h StringUtils.hpp DataBase/DataBase.cpp generated/c/THMessage.pb.cc generated/c/THMessage.pb.h Utils.cpp Socket.cpp MessageBase.cpp DataBlob.cpp SocketTcp.cpp SockUnix.cpp
 all: all-recursive
 
 .SUFFIXES:
@@ -375,14 +374,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DBTables.pb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataBase.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataBaseSqlite.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageHeader.pb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DataBlob.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageBase.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SockUnix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Socket.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SocketImplementation.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SocketTcp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/THMessage.pb.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TableComponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Plo@am__quote@
 
 .cc.o:
@@ -413,40 +411,12 @@ DataBase.lo: DataBase/DataBase.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DataBase.lo `test -f 'DataBase/DataBase.cpp' || echo '$(srcdir)/'`DataBase/DataBase.cpp
 
-MessageHeader.pb.lo: generated/c/MessageHeader.pb.cc
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT MessageHeader.pb.lo -MD -MP -MF $(DEPDIR)/MessageHeader.pb.Tpo -c -o MessageHeader.pb.lo `test -f 'generated/c/MessageHeader.pb.cc' || echo '$(srcdir)/'`generated/c/MessageHeader.pb.cc
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/MessageHeader.pb.Tpo $(DEPDIR)/MessageHeader.pb.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='generated/c/MessageHeader.pb.cc' object='MessageHeader.pb.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o MessageHeader.pb.lo `test -f 'generated/c/MessageHeader.pb.cc' || echo '$(srcdir)/'`generated/c/MessageHeader.pb.cc
-
 THMessage.pb.lo: generated/c/THMessage.pb.cc
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT THMessage.pb.lo -MD -MP -MF $(DEPDIR)/THMessage.pb.Tpo -c -o THMessage.pb.lo `test -f 'generated/c/THMessage.pb.cc' || echo '$(srcdir)/'`generated/c/THMessage.pb.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/THMessage.pb.Tpo $(DEPDIR)/THMessage.pb.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='generated/c/THMessage.pb.cc' object='THMessage.pb.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o THMessage.pb.lo `test -f 'generated/c/THMessage.pb.cc' || echo '$(srcdir)/'`generated/c/THMessage.pb.cc
-
-DataBaseSqlite.lo: DataBase/DataBaseSqlite.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DataBaseSqlite.lo -MD -MP -MF $(DEPDIR)/DataBaseSqlite.Tpo -c -o DataBaseSqlite.lo `test -f 'DataBase/DataBaseSqlite.cpp' || echo '$(srcdir)/'`DataBase/DataBaseSqlite.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DataBaseSqlite.Tpo $(DEPDIR)/DataBaseSqlite.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='DataBase/DataBaseSqlite.cpp' object='DataBaseSqlite.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DataBaseSqlite.lo `test -f 'DataBase/DataBaseSqlite.cpp' || echo '$(srcdir)/'`DataBase/DataBaseSqlite.cpp
-
-TableComponent.lo: DataBase/TableComponent.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TableComponent.lo -MD -MP -MF $(DEPDIR)/TableComponent.Tpo -c -o TableComponent.lo `test -f 'DataBase/TableComponent.cpp' || echo '$(srcdir)/'`DataBase/TableComponent.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/TableComponent.Tpo $(DEPDIR)/TableComponent.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='DataBase/TableComponent.cpp' object='TableComponent.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o TableComponent.lo `test -f 'DataBase/TableComponent.cpp' || echo '$(srcdir)/'`DataBase/TableComponent.cpp
-
-DBTables.pb.lo: generated/c/DBTables.pb.cc
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DBTables.pb.lo -MD -MP -MF $(DEPDIR)/DBTables.pb.Tpo -c -o DBTables.pb.lo `test -f 'generated/c/DBTables.pb.cc' || echo '$(srcdir)/'`generated/c/DBTables.pb.cc
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DBTables.pb.Tpo $(DEPDIR)/DBTables.pb.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='generated/c/DBTables.pb.cc' object='DBTables.pb.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DBTables.pb.lo `test -f 'generated/c/DBTables.pb.cc' || echo '$(srcdir)/'`generated/c/DBTables.pb.cc
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

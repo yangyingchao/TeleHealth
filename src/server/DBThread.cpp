@@ -7,9 +7,8 @@ using namespace std;
 
 const string TEST_DB_NAME = "/tmp/test.db";
 
-DBThread::DBThread(zmq :: context_t* context) :
-        Thread(),
-        m_pContext(context)
+DBThread::DBThread() :
+        Thread()
 {
 }
 
@@ -63,58 +62,47 @@ void DBThread::DoRealWorks()
     }
 
     PDEBUG ("Database is ready\n");
-    m_pListenSock = new zmq::socket_t(*m_pContext, ZMQ_REP);
-    assert(m_pListenSock);
-    m_pListenSock->bind(INPROC_DB_PORT);
-    while (!m_stop)
-    {
-        zmq::message_t request;
-        m_pListenSock->recv(&request);
-        if (!request.size() || !request.data())
-        {
-            PDEBUG ("Invalid data received! Length: %lu, data: %p\n",
-                    request.size(), request.data());
-            continue;
-        }
+    // m_pListenSock = NEW zmq::socket_t(*m_pContext, ZMQ_REP);
+    // assert(m_pListenSock);
+    // m_pListenSock->bind(INPROC_DB_PORT);
+    // while (!m_stop)
+    // {
+    //     zmq::message_t request;
+    //     m_pListenSock->recv(&request);
+    //     if (!request.size() || !request.data())
+    //     {
+    //         PDEBUG ("Invalid data received! Length: %lu, data: %p\n",
+    //                 request.size(), request.data());
+    //         continue;
+    //     }
 
-        Message msg;
-        msg.ParseFromArray(request.data(), request.size());
-        ZMessagePtr rsp;
-        const MessageHeader& header = msg.header();
-        //TODO: Check header to see if it is valid.
-        switch (header.type())
-        {
-            case RegisterUserReq:
-            {
-                // Should it block?
-                rsp = ProcessRegisterUser(msg);
-                break;
-            }
-            default:
-            {
-                rsp = GenerateResponseMessage(msg);
-                break;
-            }
-        }
+    //     Message msg;
+    //     msg.ParseFromArray(request.data(), request.size());
+    //     ZMessagePtr rsp;
+    //     const MessageHeader& header = msg.header();
+    //     //TODO: Check header to see if it is valid.
+    //     switch (header.type())
+    //     {
+    //         case RegisterUserReq:
+    //         {
+    //             // Should it block?
+    //             rsp = ProcessRegisterUser(msg);
+    //             break;
+    //         }
+    //         default:
+    //         {
+    //             rsp = GenerateResponseMessage(msg);
+    //             break;
+    //         }
+    //     }
 
-        // XXX: Received DB operation request.
-        cout << "DBThread: message received from WorkerThread" << endl;
-        if (rsp)
-        {
-            m_pListenSock->send(*rsp);
-        }
-    }
-}
+    //     // XXX: Received DB operation request.
+    //     cout << "DBThread: message received from WorkerThread" << endl;
+    //     if (rsp)
+    //     {
+    //         m_pListenSock->send(*rsp);
+    //     }
+    // }
 
-/* See description in header file. */
-ZMessagePtr DBThread::ProcessRegisterUser(const Message& request)
-{
-    return ZMessagePtr();
-}
-
-/* See description in header file. */
-ZMessagePtr DBThread::GenerateResponseMessage(const Message& request)
-{
-    return ZMessagePtr();
 }
 

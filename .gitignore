@@ -54,3 +54,4 @@ src/server/test
 *.pyo
 /src/test/test
 /src/client/client
+/src/server/unittest/test

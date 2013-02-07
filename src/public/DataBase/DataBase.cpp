@@ -1,6 +1,6 @@
 #include "DataBase.h"
-
 #include "DataBaseSqlite.h"
+
 DataBasePtr DataBaseFactory::GetInstance(DataBaseType type)
 {
     DataBasePtr db;
@@ -8,7 +8,7 @@ DataBasePtr DataBaseFactory::GetInstance(DataBaseType type)
     {
         case DBT_Sqlite:
         {
-            db = DataBasePtr(new DataBaseSqlite);
+            // db = DataBasePtr(new DataBaseSqlite);
             break;
         }
 

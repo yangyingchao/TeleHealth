@@ -7,17 +7,12 @@
    (ede-proj-target-makefile-program "server"
     :name "server"
     :path ""
-    :source '("Server.cpp" "DBThread.cpp" "GenericWorkThread.cpp" "WorkerThread.cpp" "ThreadPool.cpp")
-    :auxsource '("DBThread.h" "Thread.h" "GenericWorkThread.h" "WorkerThread.h" "ThreadPool.h")
+    :source '("Server.cpp" "DBThread.cpp" "WorkerThread.cpp" "MessageProcessor.cpp" "HashTable.cpp" "ConfigParser.cpp" "AccountManager.cpp" "KVDB.cpp" "KVDBImplLevelDB.cpp")
+    :auxsource '("DBThread.h" "Thread.h" "WorkerThread.h" "ThreadPool.h" "MessageProcessor.h" "Pool.h" "HashTable.h" "CommandHandlerAggregator.h" "ConfigParser.h" "AccountManager.h" "KVDB.h" "List.h" "KVDBImplLevelDB.h" "LFList.h")
     :configuration-variables 'nil
-    )
-   (ede-proj-target-makefile-program "test"
-    :name "test"
-    :path ""
-    :source '("TestServer.cpp")
     )
    )
   :makefile-type 'Makefile.am
-  :variables '(("AM_LDFLAGS" . "-lprotobuf -lz  -lzmq -pthread -lthpub -L../public -lsqlite3") ("AM_CPPFLAGS" . "-I../public -I../public/generated/c"))
+  :variables '(("AM_LDFLAGS" . "-lprotobuf -lz  -lzmq -pthread -lthpub -L../public -lsqlite3 -lleveldb") ("AM_CPPFLAGS" . "-I../public -I../public/generated/c"))
   :configuration-variables '(("debug" ("AM_CPPFLAGS" . "-DDEBUG")))
   )

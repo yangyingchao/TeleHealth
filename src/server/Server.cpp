@@ -9,27 +9,42 @@
 #include <unistd.h>
 #include "LogUtils.h"
 #include "DBThread.h"
-#include "GenericWorkThread.h"
 #include "WorkerThread.h"
 #include "Socket.h"
 #include "ThreadPool.h"
+#include "ConfigParser.h"
+
+#include "CommandHandlerAggregator.h"
 
 using namespace std;
 using namespace tr1;
 
-#define MAX_WORK_THREAD       100
+#define MAX_WORK_THREAD       64
 
 
-#define handle_error(msg) \
+#define handle_error(msg)                               \
     do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
-static ThreadPool* poolInstance = NULL;
+#ifdef DEBUG
+int xStep = 1;
+#define OUT_STEP(fmt, args...)                                          \
+    do {                                                                \
+        const char* file = __FILE__, *ptr = strstr(file, "..");         \
+        if (!ptr) ptr = file; else while (*ptr == '.' || *ptr == '\\' || *ptr == '/') ++ptr; \
+        printf("%s(%d)-%s, Step - %d:\t", ptr, __LINE__,__FUNCTION__, xStep++); \
+        printf(fmt, ##args);                                            \
+    } while(0)
+#else
+#define OUT_STEP(fmt, ...)
+#endif
+
+static ThreadPool<WorkerThread>* gWorkerThreadPool = NULL;
 
 void CleanupThreadPool()
 {
-    if (poolInstance)
+    if (gWorkerThreadPool)
     {
-        poolInstance->CleanUp();
+        gWorkerThreadPool->CleanUp();
     }
 }
 
@@ -50,21 +65,41 @@ void PrepareSignalHandlers()
     signal (SIGINT,  SigActionForKill);
 }
 
-int main ()
+int main (int argc, char** argv)
 {
     PrepareSignalHandlers();
 
-    PDEBUG ("1. Prepare ThreadPool ... \n");
+    OUT_STEP("Parse Configuration ...\n");
+    ConfigParserPtr config = ConfigParser::GetConfigParserWithParams(argc, argv);
+    if (!config)
+    {
+        handle_error("Failed to get configuration\n");
+    }
 
-    poolInstance = ThreadPool::GetInstance();
+    OUT_STEP("Gathering data from database\n");
+    // TODO:
+    // XXX:
 
-    if (!poolInstance)
+    OUT_STEP("Prepare ThreadPool ... \n");
+
+    if (!gWorkerThreadPool)
+    {
+        gWorkerThreadPool = ThreadPool<WorkerThread>::GetInstance();
+    }
+
+    if (!gWorkerThreadPool)
     {
         handle_error("Failed to create ThreadPool!\n");
     }
 
+    OUT_STEP ("Init Command handlers ...\n");
 
-    PDEBUG ("2. Prepare listening socket ...\n");
+    if (!InitCommandHandlers())
+    {
+        handle_error("Failed to initialize command handlers.\n");
+    }
+
+    OUT_STEP ("Prepare listening socket ...\n");
 
     Socket* listenSock = Socket::CreateSocket(ST_TCP, NULL, true);
     if (!listenSock)
@@ -72,20 +107,15 @@ int main ()
         handle_error("Failed to create socket!\n");
     }
 
-    PDEBUG ("3. Accepting connections ... \n");
+    OUT_STEP ("Accepting connections ... \n");
 
     while (true)
     {
         Socket* clientSock = listenSock->Accept();
         if (clientSock)
         {
-            ThreadParam* param = poolInstance->BorrowThread();
-            if (param)
-            {
-                param->m_sock = clientSock;
-                param->SignalAction(); // Unlock to make thread execute.
-            }
-            else // TODO: Notify user that we are busy.
+            WorkerThread* thread = gWorkerThreadPool->BorrowThread();
+            if (!thread || !thread->TakeOverSocket(clientSock))
             {
                 clientSock->Close();
             }
@@ -96,35 +126,6 @@ int main ()
             continue;
         }
     }
-
-#if 0
-    //  Prepare our context and sockets
-    zmq::context_t context (1);
-
-    DBThread dbThread(&context);
-    bool bRet = dbThread.Start();
-    if (!bRet)
-    {
-        cout << "Failed to start db thread. " << endl;
-        return -1;
-    }
-
-    PDEBUG ("DB Thread started\n");
-
-    zmq::socket_t clients (context, ZMQ_ROUTER);
-    clients.bind ("tcp://*:5555");
-    zmq::socket_t workers (context, ZMQ_DEALER);
-    workers.bind (INPROC_WORK_PORT);
-
-    GenericWorkerThread* workerThreads[MAX_WORK_THREAD];
-    //  Launch pool of worker threads
-    for (int i = 0; i < MAX_WORK_THREAD; i++) {
-        workerThreads[i] = new GenericWorkerThread(&context);
-        workerThreads[i]->Start();
-    }
-    //  Connect work threads to client threads via a queue
-    zmq::device (ZMQ_QUEUE, clients, workers);
-#endif
 
     CleanupThreadPool();
 

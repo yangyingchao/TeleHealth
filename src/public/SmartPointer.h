@@ -6,4 +6,7 @@
 using namespace std;
 using namespace tr1;
 
+#define NEW       new (nothrow)
+
+
 #endif /* _SMARTPOINTER_H_ */
