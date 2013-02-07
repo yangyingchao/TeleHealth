@@ -7,7 +7,7 @@
    (ede-proj-target-makefile-shared-object "thpub"
     :name "thpub"
     :path ""
-    :source '("DataBase.h" "StringUtils.hpp" "DataBase/DataBase.cpp" "generated/c/THMessage.pb.cc" "generated/c/THMessage.pb.h" "DataBase/DataBaseSqlite.cpp" "DataBase/DataBaseSqlite.h" "DataBase/TableComponent.cpp" "DataBase/TableComponent.h" "Utils.cpp" "Socket.cpp" "MessageBase.cpp" "DataBlob.cpp" "SocketTcp.cpp" "SockUnix.cpp")
+    :source '("DataBase.h" "StringUtils.hpp" "DataBase/DataBase.cpp" "generated/c/THMessage.pb.cc" "generated/c/THMessage.pb.h" "Utils.cpp" "Socket.cpp" "MessageBase.cpp" "DataBlob.cpp" "SocketTcp.cpp" "SockUnix.cpp")
     :auxsource '("LogUtils.h" "Utils.h" "units.h" "SmartPointer.h" "ZmqWrapper.h" "Thread.h" "Socket.h" "MessageBase.h" "typedefs.h" "DataBlob.h" "SocketTcp.h" "SockUnix.h")
     :configuration-variables 'nil
     )

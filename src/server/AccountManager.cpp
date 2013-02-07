@@ -6,7 +6,11 @@
 #include <sys/select.h>
 #include <unistd.h>
 #include "MessageBase.h"
+#include <algorithm>
 #include "KVDB.h"
+#include <errno.h>
+#include <stdio.h>
+
 
 static const int MaxPipes   = 64;
 static const char* FakePath = "/tmp/Accounts/";
@@ -26,7 +30,13 @@ vector<int*> g_readablePipes;
 class Pipe
 {
 public:
-    Pipe() {pipe(m_pipe);}
+    Pipe()
+    {
+        if (pipe(m_pipe))
+        {
+            memset(m_pipe, -1, sizeof(int)*2);
+        };
+    }
     ~Pipe(){(void)close(m_pipe[0]);(void)close(m_pipe[1]);}
 
     int GetWriteFd() {return m_pipe[1];}

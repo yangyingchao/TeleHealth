@@ -1,6 +1,8 @@
 #include "TestKVDB.h"
 #include "../KVDBImplLevelDB.cpp"
 #include "../KVDB.cpp"
+#include <unistd.h>
+#include <stdlib.h>
 
 static const string TEST_KEY("key");
 static const string TEST_KEY2("key2");

@@ -13,8 +13,5 @@ ede_FILES=Project.ede Makefile.am
 
 SUBDIRS= 
 EXTRA_DIST=Project.ede
-bin_PROGRAMS=client
-client_SOURCES=Client.cpp
-client_LDADD=
 
 # End of Makefile.am

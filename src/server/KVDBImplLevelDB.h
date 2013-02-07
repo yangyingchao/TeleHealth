@@ -4,8 +4,6 @@
 #include "KVDB.h"
 #include "leveldb/db.h"
 
-class leveldb::DB;
-
 class LevelDB : public KVDB
 {
 public:

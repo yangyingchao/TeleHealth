@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <libgen.h>
+#include <string.h>
 
 #ifdef __APPLE__
 #include <uuid/uuid.h>

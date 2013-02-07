@@ -5,7 +5,7 @@
 # EDE is the Emacs Development Environment.
 # http://cedet.sourceforge.net/ede.shtml
 #
-AM_LDFLAGS=-L../../public -lprotobuf
+AM_LDFLAGS=-L../../public -lprotobuf -luuid
 AM_CPPFLAGS=-I../../public
 
 top=../../../
@@ -15,6 +15,6 @@ SUBDIRS=
 EXTRA_DIST=Project.ede
 bin_PROGRAMS=test
 test_SOURCES=main.cpp TestKVDB.cpp
-test_LDADD= -lcppunit -lleveldb -lthpub
+test_LDADD= -lleveldb -lthpub -lcppunit
 
 # End of Makefile.am
