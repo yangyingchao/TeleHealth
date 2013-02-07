@@ -21,8 +21,12 @@ public:
 
     void Reset();
 
-    string m_errMsg;
-    AccountPtr m_account;
+    string       m_errMsg;
+    AccountPtr   m_account;
+
+    AccountStatus m_status;
+
+    string m_sessionId;
 };
 
 

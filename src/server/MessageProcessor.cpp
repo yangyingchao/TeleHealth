@@ -88,8 +88,8 @@ bool MessageProcessor::RegisterCommandHandler(Command cmd, CommandHandler handle
 /* See description in header file. */
 THMessagePtr MessageProcessor::GenericErrorResponse(MessageHeaderPtr header, ErrorCode err)
 {
-    THMessagePtr rsp(new THMessage);
-    MessageHeaderPtr newHeader(new MessageHeader);
+    THMessagePtr rsp(NEW THMessage);
+    MessageHeaderPtr newHeader(NEW MessageHeader);
     newHeader->set_cmd(header->cmd());
     newHeader->set_version(header->version());
     newHeader->set_session_id(header->session_id());
@@ -118,4 +118,5 @@ void MsgPrsPrivate::Reset()
 {
     m_errMsg.clear();
     m_account.reset();
+    m_sessionId.clear();
 }

@@ -26,7 +26,7 @@ ConfigParserPtr ConfigParser::GetConfigParserWithParams(int argc, char** argv)
     //XXX: Implement this!
     if (!gConfigParser)
     {
-        gConfigParser.reset( new ConfigParser());
+        gConfigParser.reset( NEW ConfigParser());
     }
     if (gConfigParser && !gConfigParser->m_valid)
     {

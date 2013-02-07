@@ -75,8 +75,8 @@ main(int argc, char *argv[])
     shared_ptr<User> user;
     for (j = 1; j < argc; j++)
     {
-        message.reset(new THMessage);
-        header.reset(new MessageHeader);
+        message.reset(NEW THMessage);
+        header.reset(NEW MessageHeader);
         // Checks are skipped for this test app.
         header->set_version("20120730");
         if (j%2 == 0)
@@ -90,7 +90,7 @@ main(int argc, char *argv[])
         header->set_session_id(string(""));
         message->SetMessageHeader(header);
 
-        user.reset(new User);
+        user.reset(NEW User);
         user->set_name("Hello");
         message->SetMessageBody(user);
 

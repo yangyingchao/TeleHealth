@@ -2,8 +2,7 @@
 #define _KVDB_H_
 
 #include <string>
-
-using namespace std;
+#include "SmartPointer.h"
 
 //            key,     value
 // Value would be a string which is dumped from google protocol buffer.

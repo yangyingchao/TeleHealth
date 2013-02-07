@@ -10,13 +10,19 @@ typedef enum _AM_Error
     AE_OK = 0,
     AE_INVALID,
     AE_EXISTED,
+    AE_NOMEM,
+    AE_BUSY,
+    AE_DB,
     AE_MAX,
 } AM_Error;
 
 const char* AM_ErrorStringify(AM_Error errCode);
 
-bool InilializeAccountManager(const char* path);
+bool InitializeAccountManager(const char* path);
+
+void DestroyAccountManager();
 
 AM_Error RegisterAccount(Account* account);
 
+AM_Error AccountLogoff(Account* account);
 #endif /* _ACCOUNTMANAGER_H_ */

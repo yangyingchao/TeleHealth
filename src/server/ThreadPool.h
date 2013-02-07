@@ -19,7 +19,7 @@ public:
     // Just use it as simple factory.
     static ThreadPool* GetInstance(int chunkSize = CAP_THREADS)
     {
-        return new ThreadPool<T>(chunkSize);
+        return NEW ThreadPool<T>(chunkSize);
     }
 
     T* BorrowThread()

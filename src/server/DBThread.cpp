@@ -62,7 +62,7 @@ void DBThread::DoRealWorks()
     }
 
     PDEBUG ("Database is ready\n");
-    // m_pListenSock = new zmq::socket_t(*m_pContext, ZMQ_REP);
+    // m_pListenSock = NEW zmq::socket_t(*m_pContext, ZMQ_REP);
     // assert(m_pListenSock);
     // m_pListenSock->bind(INPROC_DB_PORT);
     // while (!m_stop)

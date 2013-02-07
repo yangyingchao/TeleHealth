@@ -1,6 +1,6 @@
 // Message Header
 enum Command {
-    InvalidCmd         = 0;
+    InvalidCmd      = 0;
     RegisterUserReq = 1;
     RegisterUserRsp = 2;
     UserLoginReq    = 3;
@@ -25,6 +25,13 @@ message MessageHeader {
 }
 
 
+
+enum ValidServiceType {
+    VST_Invalid      = 0;
+    VST_PhysicalInfo = 1;
+}
+
+
 // Message Entries
 message User {
     required string name       = 1;
@@ -39,19 +46,25 @@ message UserList {
 }
 
 
+message ServiceLists {
+    repeated ValidServiceType types = 1;
+    optional string           tips  = 10;
+}
+
+
 
 enum AccountStatus {
-    InvalidStatus = 0;
-    LoggedIn      = 1;
-    LoggedOff     = 2;
-    Dead          = 1000;
+    AS_Invalid = 0;
+    AS_LoggedIn      = 1;
+    AS_LoggedOff     = 2;
+    AS_Dead          = 1000;
 }
 
 
 message Account {
     required string        email      = 1;
     required string        passwd     = 2;
-    optional AccountStatus status     = 3 [default = InvalidStatus];
+    optional AccountStatus status     = 3 [default = AS_Invalid];
     optional uint64        reg_date   = 4;
     optional uint64        last_login = 5;
 }

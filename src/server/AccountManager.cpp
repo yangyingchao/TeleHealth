@@ -1,23 +1,52 @@
 #include "SmartPointer.h"
 #include "AccountManager.h"
-#include "LFList.h"
 #include "Pool.h"
 #include <vector>
 #include <pthread.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include "MessageBase.h"
 #include "KVDB.h"
 
 static const int MaxPipes   = 64;
 static const char* FakePath = "/tmp/Accounts/";
+static int* gPipes = NULL;
 
 static bool ShouldStop = false; // TODO: use local socket to control thread!
 
 pthread_t g_managerThread;
 
 LF_List      g_accountRequests;
+
+// MessageProcessor will write to g_writeablePipes, and account_manager_thread will get
+// notified through reading the read-end.
 LF_List      g_writablePipes;
-vector<int> g_readablePipes;
+vector<int*> g_readablePipes;
+
+class Pipe
+{
+public:
+    Pipe() {pipe(m_pipe);}
+    ~Pipe(){(void)close(m_pipe[0]);(void)close(m_pipe[1]);}
+
+    int GetWriteFd() {return m_pipe[1];}
+    int GetReadFd() {return m_pipe[0];}
+    int m_pipe[2];
+};
+
+static  ObjectPool<Pipe>* g_requestPipes = NULL; // Pipes used by each AccountRequest;
+
+
+#define NOTIFY_FD(X) do { write((X), "w", 1); } while (0)
+#define READ_FD(X)       do                     \
+    {                                           \
+        char buff[2];                           \
+        (void)read((X), buff, 1);               \
+    } while (0)
+
+#define INT2PTR(X)   ((void*)(X))
+#define PTR2INT(X)   ((int*)(*X))
+
 
 // Functor to add a fd into select.
 struct AddPipeFunctor
@@ -32,12 +61,12 @@ struct AddPipeFunctor
         }
     }
 
-    void operator()(int fd)
+    void operator()(int* fd)
     {
         if (m_set && m_maxFd)
         {
-            FD_SET(fd, m_set);
-            *m_maxFd = max(*m_maxFd, fd);
+            FD_SET(*fd, m_set);
+            *m_maxFd = max(*m_maxFd, *fd);
         }
     }
 
@@ -46,25 +75,65 @@ struct AddPipeFunctor
 };
 
 
-typedef enum _account_requestType
+typedef enum _AccountRequestType
 {
-    ART_CREATE = 0,
+    ART_INVALID = 0,
+    ART_CREATE,
     ART_UPDATE,
     ART_GET,
     ART_DELETE,
-    ART_INVALID,
-} account_requestType;
+    ART_MAX,
+} AccountRequestType;
 
-struct account_request
+static inline bool IsAccountValid(Account* account)
 {
-    account_request() : type(ART_INVALID), result(false) {}
+    return  (account && account->has_email() && !account->email().empty()
+             && account->has_passwd() && !account->passwd().empty());
+}
 
-    account_requestType type;
-    int               pipe[2];
-    KVPair            kv;
-    bool              result;
+class AccountRequest
+{
+public:
+    AccountRequestType m_type;
+    Pipe*              m_pipe;          // Will be written by manager_thread.
+    KVPair             m_kv;
+    bool               m_result;
+    Account*           m_account;
+
+    bool FeedKVPair()
+    {
+        m_kv.first = m_account->email();
+        return m_account->SerializeToString(&m_kv.second);
+    }
+
+    ~AccountRequest()
+    {
+        if (m_pipe)
+        {
+            g_requestPipes->PutObject(m_pipe);
+        }
+    }
+
+    static AccountRequest* GetInstance(Account* account = NULL,
+                                       Pipe* p = NULL,
+                                       AccountRequestType type = ART_INVALID)
+    {
+        AccountRequest* request = NULL;
+        if (account && IsAccountValid(account) && type < ART_MAX)
+        {
+            request = NEW AccountRequest(account, type, p);
+        }
+        return request;
+    }
+
+private:
+    AccountRequest(){}
+    AccountRequest(Account* account, AccountRequestType type, Pipe* p)
+            : m_account(account), m_type(type), m_pipe(p), m_result(false)
+    {
+        m_kv.first = account->email();
+    }
 };
-
 
 //TODO: Add a AF_UNIX socket to control this thread!
 void* account_manager_thread(void* data)
@@ -100,43 +169,43 @@ void* account_manager_thread(void* data)
             // consume all pipes. select() can't tell us which fd is readable, if we use
             // epoll, life will be easier...
             char buff[256];
-            vector<int>::iterator iter = g_readablePipes.begin();
-            vector<int>::iterator end  = g_readablePipes.end();
+            vector<int*>::iterator iter = g_readablePipes.begin();
+            vector<int*>::iterator end  = g_readablePipes.end();
             for (; iter != end; ++iter)
             {
-                if (FD_ISSET(*iter, &rfds))
+                if (FD_ISSET(**iter, &rfds))
                 {
-                    (void)read(*iter, buff, 256);
+                    (void)read(**iter, buff, 256);
                 }
             }
 
             // Now get requests one by one, and process them.
-            account_request* req = NULL;
-            while ((req = static_cast<account_request*>(g_accountRequests.DeQueue())) != NULL)
+            AccountRequest* req = NULL;
+            while ((req = static_cast<AccountRequest*>(g_accountRequests.DeQueue())) != NULL)
             {
                 if (req)
                 {
-                    KVPair* p = &req->kv;
-                    switch (req->type)
+                    KVPair* p = &req->m_kv;
+                    switch (req->m_type)
                     {
                         case ART_CREATE:
                         {
-                            req->result = db->AddKVPair(p->first, p->second);
+                            req->m_result = db->AddKVPair(p->first, p->second);
                             break;
                         }
                         case ART_UPDATE:
                         {
-                            req->result = db->UpdateValue(p->first, p->second);
+                            req->m_result = db->UpdateValue(p->first, p->second);
                             break;
                         }
                         case ART_GET:
                         {
-                            req->result = db->GetValue(p->first, p->second);
+                            req->m_result = db->GetValue(p->first, p->second);
                             break;
                         }
                         case ART_DELETE:
                         {
-                            req->result = db->DeleteKVPair(p->first);
+                            req->m_result = db->DeleteKVPair(p->first);
                             break;
                         }
                         default:
@@ -145,7 +214,7 @@ void* account_manager_thread(void* data)
                         }
                     }
 
-                    write(req->pipe[1], "w", 1); // Notify listener.
+                    NOTIFY_FD(req->m_pipe->GetWriteFd());
                 }
             }
         }
@@ -161,28 +230,41 @@ void* account_manager_thread(void* data)
     return NULL;
 }
 
-// TODO:
-
 // Load account info into memory.
-bool InilializeAccountManager(const char* path)
+bool InitializeAccountManager(const char* path)
 {
     if (!path || !strlen(path))
     {
         path = FakePath;
     }
 
+    // Create global pipes used by each requests.
+    g_requestPipes = ObjectPool<Pipe>::GetPool(MaxPipes);
+    if (!g_requestPipes)
+    {
+        return false;
+    }
+
+    // Create pipes used to communicate between threads.
+    gPipes = NEW int[MaxPipes * 2];
+    if (!gPipes)
+    {
+        return false;
+    }
+    int* p = gPipes;
     for (int i = 0; i < MaxPipes; ++i)
     {
-        int p[2];
         if (pipe(p) == 0)
         {
-            g_readablePipes.push_back(p[0]);
-            g_writablePipes.EnQueue((void*)p[1]);
+            g_readablePipes.push_back(p++);
+            g_writablePipes.EnQueue(p++);
         }
     }
 
+    // Initialize database.
     KVDB* db = KVDB::GetInstance(KVDB::KVDB_Fake, path);
 
+    // initialize manager thread.
     if (!pthread_create(&g_managerThread, NULL, account_manager_thread, db))
     {
         return true;
@@ -192,30 +274,100 @@ bool InilializeAccountManager(const char* path)
 }
 
 
-bool IsAccountExsited(Account* account)
+void DestroyAccountManager()
+{
+    // DO clean ups....
+}
+
+
+static inline void WaitForRequestTBD(AccountRequest* req)
+{
+    // Caller should make sure req is valid.
+    g_accountRequests.EnQueue(req);
+    int* p = (int*)g_writablePipes.DeQueue();
+    NOTIFY_FD(*p);
+    READ_FD(req->m_pipe->GetReadFd());
+    g_writablePipes.EnQueue(p);
+}
+
+bool IsAccountExsited(AccountRequest* req)
 {
     bool result = false;
+    if (req)
+    {
+        req->m_type = ART_GET;
+        WaitForRequestTBD(req);
+        result = !req->m_result;
+    }
     return result;
 }
 
+// Public interfaces begins here.
 AM_Error RegisterAccount(Account* account)
 {
+    if (!IsAccountValid(account))
+    {
+        return AE_INVALID;
+    }
 
-    return AE_OK;
+    Pipe* p = (Pipe*)g_requestPipes->GetObject();
+    if (!p)
+    {
+        return AE_BUSY;
+    }
+
+    AM_Error err = AE_OK;
+    AccountRequest* req = AccountRequest::GetInstance(account, p);
+    if (!req)
+    {
+        err = AE_INVALID;
+        goto ret;
+    }
+
+    if (IsAccountExsited(req))
+    {
+        err = AE_EXISTED;
+        goto ret;
+    }
+
+    if (req->FeedKVPair())
+    {
+        req->m_type = ART_CREATE;
+        req->m_account->set_status(AS_LoggedIn);
+        WaitForRequestTBD(req);
+        if (req->m_result)
+        {
+            err = AE_OK;
+        }
+        else
+        {
+            err = AE_DB;
+        }
+    }
+
+ret:
+    if (req)
+    {
+        delete req;
+    }
+
+    return err;
 }
 
-bool IsAccountValid(Account* account)
-{
-    bool result = false;
-    return result;
-}
 
 static const char* AM_ErrorMessages[] =
 {
-    "Succeeded", "Invalid Request", "Account already existed", NULL,
+    "Succeeded", "Invalid Request", "Account already existed", "Out of memory",
+    "Busy", "Database error", NULL,
 };
 
 const char* AM_ErrorStringify(AM_Error errCode)
 {
     return errCode < AE_MAX ? AM_ErrorMessages[(int)errCode] : NULL;
+}
+
+
+AM_Error AccountLogoff(Account* account)
+{
+    return AE_OK;
 }

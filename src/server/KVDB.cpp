@@ -12,7 +12,7 @@ KVDB* KVDB::GetInstance(KVDB_Type type, const char* path)
         {
             case KVDB_LevelDb:
             {
-                db = new LevelDB(path);
+                db = NEW LevelDB(path);
                 break;
             }
 

@@ -25,7 +25,7 @@ public:
     // Refer to: http://coolshell.cn/articles/8239.html
     void EnQueue(void* obj)
     {
-        record* q = new record();
+        record* q = NEW record();
         q->data = obj;
         q->next = NULL;
 

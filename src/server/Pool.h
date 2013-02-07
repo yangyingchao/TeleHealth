@@ -13,7 +13,7 @@ public:
                                   void* data = NULL,
                                   bool autoExpand=false)
     {
-        return new ObjectPool<T>(chunkSize, fn, data, autoExpand);
+        return NEW ObjectPool<T>(chunkSize, fn, data, autoExpand);
     }
 
     virtual ~ObjectPool()
@@ -66,7 +66,7 @@ private:
             bool err = false;
             for (int i = 0; i < m_chunkSize; ++i)
             {
-                T* object(new T);
+                T* object(NEW T);
                 if (!object)
                 {
                     err = true;
