@@ -24,6 +24,7 @@ public:
 
     static Socket* CreateSocket(SocketType  type = ST_TCP,
                                 const char* host = NULL,
+                                const char* port = SERVER_PORT,
                                 bool forListen   = true);
 
     virtual void Close() = 0;

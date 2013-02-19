@@ -1,16 +1,15 @@
-#include "SmartPointer.h"
 #include "AccountManager.h"
+#include "KVDB.h"
 #include "Pool.h"
-#include <vector>
+#include "SmartPointer.h"
+#include <algorithm>
+#include <errno.h>
+#include <fcntl.h>
 #include <pthread.h>
+#include <stdio.h>
 #include <sys/select.h>
 #include <unistd.h>
-#include "MessageBase.h"
-#include <algorithm>
-#include "KVDB.h"
-#include <errno.h>
-#include <stdio.h>
-
+#include <vector>
 
 static const int MaxPipes   = 64;
 static const char* FakePath = "/tmp/Accounts/";
@@ -266,6 +265,7 @@ bool InitializeAccountManager(const char* path)
     {
         if (pipe(p) == 0)
         {
+            (void)fcntl(*p, F_SETFL, O_NONBLOCK);
             g_readablePipes.push_back(p++);
             g_writablePipes.EnQueue(p++);
         }
@@ -317,26 +317,26 @@ AM_Error RegisterAccount(Account* account)
 {
     if (!IsAccountValid(account))
     {
-        return AE_INVALID;
+        return EC_INVALID_ARG;
     }
 
     Pipe* p = (Pipe*)g_requestPipes->GetObject();
     if (!p)
     {
-        return AE_BUSY;
+        return EC_BUSY;
     }
 
-    AM_Error err = AE_OK;
+    AM_Error err = EC_OK;
     AccountRequest* req = AccountRequest::GetInstance(account, p);
     if (!req)
     {
-        err = AE_INVALID;
+        err = EC_INVALID_ARG;
         goto ret;
     }
 
     if (IsAccountExsited(req))
     {
-        err = AE_EXISTED;
+        err = EC_EXISTED;
         goto ret;
     }
 
@@ -347,11 +347,11 @@ AM_Error RegisterAccount(Account* account)
         WaitForRequestTBD(req);
         if (req->m_result)
         {
-            err = AE_OK;
+            err = EC_OK;
         }
         else
         {
-            err = AE_DB;
+            err = EC_DB_ERR;
         }
     }
 
@@ -364,20 +364,12 @@ ret:
     return err;
 }
 
+/*! Handle logoff.
 
-static const char* AM_ErrorMessages[] =
-{
-    "Succeeded", "Invalid Request", "Account already existed", "Out of memory",
-    "Busy", "Database error", NULL,
-};
-
-const char* AM_ErrorStringify(AM_Error errCode)
-{
-    return errCode < AE_MAX ? AM_ErrorMessages[(int)errCode] : NULL;
-}
-
-
+  @return AM_Error
+*/
 AM_Error AccountLogoff(Account* account)
 {
-    return AE_OK;
+    // TODO: Clean up resources, update status ....
+    return EC_OK;
 }

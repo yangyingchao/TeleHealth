@@ -42,23 +42,29 @@ MessageProcessor::MessageProcessor()
 THMessagePtr MessageProcessor::ProcessMessage(THMessagePtr msg)
 {
     PDEBUG ("enter\n");
-    ErrorCode err = EC_INVALID_CMD;
     THMessagePtr rsp;
-    // No need to check msg again herer.
-
-    MessageHeaderPtr header = msg->GetMessageHeader();
-    Command cmd = header->cmd();
-    if (IsRequestCommand(cmd))
+    ErrorCode err = EC_UNEXPECTED;
+    MessageHeaderPtr header;
+    if (msg->IsValid()) // Ensure msg is valid.
     {
-        HandlerMap::iterator iter = MessageProcessor::m_commandHandlers.find(cmd);
-        if (iter != MessageProcessor::m_commandHandlers.end() && iter->second)
+        header = msg->GetMessageHeader();
+        Command cmd = header->cmd();
+        if (IsRequestCommand(cmd))
         {
-            rsp = iter->second(msg, m_privateData);
-            err = EC_OK;
+            HandlerMap::iterator iter = MessageProcessor::m_commandHandlers.find(cmd);
+            if (iter != MessageProcessor::m_commandHandlers.end() && iter->second)
+            {
+                rsp = iter->second(msg, m_privateData);
+                err = EC_OK;
+            }
+            else
+            {
+                err = EC_UNSUPPORT_CMD;
+            }
         }
         else
         {
-            err = EC_UNSUPPORT_CMD;
+            err = EC_INVALID_CMD;
         }
     }
 

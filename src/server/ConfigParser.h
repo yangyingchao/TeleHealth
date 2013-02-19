@@ -15,6 +15,7 @@ public:
     virtual ~ConfigParser();
     static ConfigParserPtr GetConfigParserWithParams(int argc, char** argv);
     const string& GetRootDirectory();
+    const char* GetServerPort();
 
 private:
     bool m_valid;

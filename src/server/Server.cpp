@@ -31,7 +31,7 @@ int xStep = 1;
     do {                                                                \
         const char* file = __FILE__, *ptr = strstr(file, "..");         \
         if (!ptr) ptr = file; else while (*ptr == '.' || *ptr == '\\' || *ptr == '/') ++ptr; \
-        printf("%s(%d)-%s, Step - %d:\t", ptr, __LINE__,__FUNCTION__, xStep++); \
+        printf("%s(%d)\t-%s, Step - %d:\t", ptr, __LINE__,__FUNCTION__, xStep++); \
         printf(fmt, ##args);                                            \
     } while(0)
 #else
@@ -101,7 +101,7 @@ int main (int argc, char** argv)
 
     OUT_STEP ("Prepare listening socket ...\n");
 
-    Socket* listenSock = Socket::CreateSocket(ST_TCP, NULL, true);
+    Socket* listenSock = Socket::CreateSocket(ST_TCP, NULL, config->GetServerPort(), true);
     if (!listenSock)
     {
         handle_error("Failed to create socket!\n");

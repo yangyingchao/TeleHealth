@@ -20,7 +20,8 @@ Socket::~Socket()
 }
 
 /* See description in header file. */
-Socket*  Socket::CreateSocket(SocketType type, const char* host, bool forListen)
+Socket*  Socket::CreateSocket(SocketType type, const char* host,
+                              const char* port, bool forListen)
 {
     Socket* sock = NULL;
 
@@ -28,7 +29,7 @@ Socket*  Socket::CreateSocket(SocketType type, const char* host, bool forListen)
     {
         case ST_TCP:
         {
-            sock = new SocketTcp(host, forListen);
+            sock = new SocketTcp(host, port, forListen);
             if (sock->m_socket == -1)
             {
                 delete sock;

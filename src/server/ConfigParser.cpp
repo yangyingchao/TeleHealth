@@ -3,6 +3,8 @@
 
 static ConfigParserPtr gConfigParser;
 
+static const char* FAKE_PORT = "5678";
+
 /* See description in header file. */
 ConfigParser::ConfigParser()
         : m_root("/var/tmp/server"),
@@ -40,4 +42,10 @@ ConfigParserPtr ConfigParser::GetConfigParserWithParams(int argc, char** argv)
 const string& ConfigParser::GetRootDirectory()
 {
     return m_root;
+}
+
+/* See description in header file. */
+const char* ConfigParser::GetServerPort()
+{
+    return FAKE_PORT;
 }

@@ -40,6 +40,9 @@ public:
     const DataBlobPtr GetHeaderBlob();
     const DataBlobPtr GetBodyBlob();
 
+    // Check if this message is valid.
+    bool IsValid();
+
 private:
 
     void UpdateHeaderSize();

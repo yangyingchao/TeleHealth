@@ -8,11 +8,12 @@ const int SIZEOFINT16 = sizeof(int16);
 /**
  * @name MessageToBlob - Serialize message into a blob.
  * @param msg -  message to be serialized
- * @param destSize - Number of dest Size, should be greater than ByteSize of
- *                   msg if it is  not -1.
+ * @param isHeader - if it is header, then fill it to HEADER_LENGTH bytes, with the first
+ *                   two bytes filled with real size of data.
+
  * @return DataBlobPtr - DataBlob contains message.
  */
-DataBlobPtr MessageToBlob(const MessagePtr& msg, int destSize=-1)
+DataBlobPtr MessageToBlob(const MessagePtr& msg, bool isHeader = false)
 {
     DataBlobPtr blob;
     if (!msg)
@@ -26,22 +27,28 @@ DataBlobPtr MessageToBlob(const MessagePtr& msg, int destSize=-1)
         return blob;
     }
 
-    int allocSize = dataSize + SIZEOFINT16;
-    allocSize = allocSize < destSize ? destSize : allocSize;
-    if (allocSize > 0)
+    if (isHeader)
     {
-        int16* ptr = NULL;
-        blob       = DataBlob::GetInstance();
-        if (blob && blob->PrepareSpace(allocSize) && (ptr = (int16*)(blob->GetData())))
+        assert(dataSize < HEADER_LENGTH);
+        dataSize = HEADER_LENGTH;
+    }
+
+    int16* ptr = NULL;
+    blob       = DataBlob::GetInstance();
+    if (blob && blob->PrepareSpace(dataSize) && (ptr = (int16*)(blob->GetData())))
+    {
+        if (isHeader)
         {
             *ptr = (int16)(msg->ByteSize());
             ++ptr;
-            if (!msg->SerializeToArray((void*)ptr, dataSize))
-            {
-                blob.reset();
-            }
+        }
+
+        if (!msg->SerializeToArray((void*)ptr, dataSize))
+        {
+            blob.reset();
         }
     }
+
     return blob;
 }
 
@@ -108,7 +115,7 @@ const DataBlobPtr THMessage::GetHeaderBlob()
 {
     if (!m_pHeaderBlob)
     {
-        m_pHeaderBlob = MessageToBlob(m_pHeader, HEADER_LENGTH);
+        m_pHeaderBlob = MessageToBlob(m_pHeader, true);
     }
     return m_pHeaderBlob;
 }
@@ -136,4 +143,15 @@ void THMessage::UpdateHeaderSize()
     {
         m_pHeader->set_length(m_pBodyMessage->ByteSize() + SIZEOFINT16);
     }
+}
+
+/* See description in header file. */
+bool THMessage::IsValid()
+{
+    int dataSize = m_pHeader->length();
+    if (dataSize && (!m_pBodyBlob || !m_pBodyBlob->GetDataSize()))
+    {
+        return  false;
+    }
+    return true;
 }

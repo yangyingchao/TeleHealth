@@ -16,7 +16,7 @@
 // Implementation of SockTcp
 
 /* See description in header file. */
-SocketTcp::SocketTcp(const char* host, bool forListen)
+SocketTcp::SocketTcp(const char* host, const char* port, bool forListen)
         : Socket()
 {
     m_type = ST_TCP;
@@ -32,7 +32,7 @@ SocketTcp::SocketTcp(const char* host, bool forListen)
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
 
-    int ret = getaddrinfo(host, SERVER_PORT, &hints, &result);
+    int ret = getaddrinfo(host, port, &hints, &result);
     if (ret == 0)
     {
         struct addrinfo* rp = result;

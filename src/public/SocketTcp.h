@@ -7,7 +7,7 @@ class SocketTcp : public Socket
 {
 public:
     SocketTcp();
-    SocketTcp(const char* host, bool forListen);
+    SocketTcp(const char* host, const char* port, bool forListen);
     virtual ~SocketTcp();
 
     virtual Socket* Accept();

@@ -8,42 +8,32 @@ THMessagePtr zzz_RegisterAccountCommandHandler(THMessagePtr msg, MsgPrsPrivate& 
     printf("Called!\n");
 
     string&  errMsg(privData.m_errMsg);
+    AM_Error err = EC_OK;
+    MessageHeaderPtr header = msg->GetMessageHeader();
     do
     {
-        DataBlobPtr    blob;
-        unsigned char* data     = NULL;
-        uint16         dataSize = 0;
 
-        // Check if this message is valid.
-        if (privData.m_account ||                           // private data is not empty
-            !(blob = msg->GetBodyBlob()) ||                 // No blob
-            !(data = (unsigned char*)(blob->GetData())) ||  // No Data
-            !blob->GetDataSize() ||                         // size of Blob is zero
-            !(dataSize = *((uint16*)data)))                 // size of real data is zero
+        if (privData.m_account)                           // private data is not empty
         {
             errMsg = "Data corrupt!";
+            err = EC_INVALID_ARG;
             break;
         }
 
-        data += SIZEOFINT16;
-
         // Parse it into a Account class.
-        Account* account = new Account;
+        DataBlobPtr blob    = msg->GetBodyBlob();
+        Account*    account = new Account;
         privData.m_account.reset(account);
-        if (!account->ParseFromArray(data, dataSize))
+        if (!account->ParseFromArray(blob->GetData(), blob->GetDataSize()))
         {
             errMsg = "Failed to parse message.";
+            err = EC_INVALID_ARG;
             break;
         }
 
         AM_Error err = RegisterAccount(account);
         if (err)
         {
-            const char* msg = AM_ErrorStringify(err);
-            if (msg)
-            {
-                errMsg = msg;
-            }
             break;
         }
 
@@ -51,31 +41,28 @@ THMessagePtr zzz_RegisterAccountCommandHandler(THMessagePtr msg, MsgPrsPrivate& 
         privData.m_status = account->status();
         privData.m_sessionId = "FAKE_SEESION_ID"; // XXX:
 
-        // Reuse and update header.
-        MessageHeaderPtr header = msg->GetMessageHeader();
-        header->set_cmd(RegisterUserRsp);
-        header->set_length(0);
-        header->set_session_id(privData.m_sessionId);
-
-        // Generate a ServiceLists and set it as body of message.
-        ServiceLists* body = NEW ServiceLists;
-        if (!body)
-        {
-            errMsg = "No mem";
-            break;
-        }
-
-        // Add services provided to this account.
-        body->add_types(VST_PhysicalInfo);
-        body->set_tips("Welcome, you!");
-        msg->SetMessageBody(MessagePtr(body));
-
     } while (0);
 
-    if (!errMsg.empty())
-    {
-        // XXX: Handle error here and generate reply.
-    }
+    // Reuse and update header.
+    header->set_cmd(RegisterUserRsp);
+    header->set_length(0);
+    header->set_session_id(privData.m_sessionId);
+    header->set_extra_info((uint32)err); // Use this extra_info as error code.
 
+    AccountRegisterResponse* body = NEW AccountRegisterResponse;
+
+    if (!err && body)
+    {
+        body->set_err(err);
+        // Generate a ServiceLists and set it as body of message.
+        ServiceLists* srvList = body->mutable_srv_list();
+        if (srvList)
+        {
+            // Add services provided to this account.
+            srvList->add_types(VST_PhysicalInfo);
+            srvList->set_tips("Welcome, you!");
+        }
+        msg->SetMessageBody(MessagePtr(body));
+    }
     return  msg;
 }
