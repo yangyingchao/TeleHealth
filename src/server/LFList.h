@@ -55,7 +55,10 @@ public:
             }
         }
         while(!CAS(m_listHead, p, p->next));
-        return p->next->data;
+
+        void* data = p->next->data;
+        delete p;
+        return data;
     }
 
 private:

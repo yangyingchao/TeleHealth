@@ -18,7 +18,11 @@ public:
 
     virtual ~ObjectPool()
     {
-        //TODO: Free all objects ...
+        T* nd = NULL;
+        while ((nd = GetObject()))
+        {
+            delete nd;
+        }
     }
 
 
