@@ -18,6 +18,7 @@ public:
 
     virtual ~ObjectPool()
     {
+        m_autoExpand = false;
         T* nd = NULL;
         while ((nd = GetObject()))
         {
