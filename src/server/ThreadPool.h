@@ -2,7 +2,8 @@
 #define _THREADPOOL_H_
 
 #include "Pool.h"
-using namespace std;
+#include "ZmqWrapper.h"
+
 
 #define CAP_THREADS       64
 
@@ -17,9 +18,9 @@ public:
     }
 
     // Just use it as simple factory.
-    static ThreadPool* GetInstance(int chunkSize = CAP_THREADS)
+    static ThreadPool* GetInstance(ContextPtr pContext, int chunkSize = CAP_THREADS)
     {
-        return NEW ThreadPool<T>(chunkSize);
+        return NEW ThreadPool<T>(pContext, chunkSize);
     }
 
     T* BorrowThread()
@@ -40,7 +41,8 @@ public:
     }
 
 private:
-    ThreadPool(int chunkSize)
+    ThreadPool(ContextPtr pContext, int chunkSize)
+            : m_pContext(pContext)
     {
         m_pObjectPool = ObjectPool<T>::GetPool(chunkSize,
                                                &ThreadPool::ObjectPoolCallback,
@@ -53,13 +55,15 @@ private:
         if (obj && data)
         {
             obj->SetThreadPool((ThreadPool*)data);
-            obj->Start();
+            obj->SetContext();
+            obj->Start(m_pContext);
             result = true;
         }
         return  result;;
     }
 
     ObjectPool<T>* m_pObjectPool;
+    ContextPtr     m_pContext;
 };
 
 #endif /* _THREADPOOL_H_ */

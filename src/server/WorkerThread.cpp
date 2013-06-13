@@ -96,43 +96,18 @@ void*  WorkerThread::StaticThreadFunction(void* arg)
 /* See description in header file. */
 void WorkerThread::DoRealWorks()
 {
+    socket_t socket (*m_pContext, ZMQ_REP);
+    socket.connect ("inproc://workers");
     while (!m_stop)
     {
-        int ret = m_param.WaitForAction();
-        if (ret)
-        {
-            continue;
-        }
-        // PDEBUG ("Thread %lu is working...\n", TID2ULONG(m_tid));
-        PDEBUG ("Thread %p is working...\n", this);
-
-        Socket* sock = m_param.m_sock;
-        if (!sock)
-        {
-            continue;
-        }
-
-        while (true)
-        {
-            THMessagePtr msg = sock->Receive();
-            if (!msg)
-            {
-                m_param.m_busy = false;
-                sock->Close();
-                if (m_pPool)
-                {
-                    m_pPool->ReturnThread(this);
-                }
-                PDEBUG ("Socket closed ...\n");
-                break;
-            }
-
-            // TODO: Add real work here.
-            THMessagePtr rsp = HandleRequest(msg);
-
-            // Send it back to client;
-            int n = sock->Send(rsp);
-        }
+        message_t request;
+        socket.recv(&request);
+        THMessage* msg = request.data();
+        THMessagePtr rsp = HandleRequest(msg);
+        //TODO: Error checking, size...
+        message_t reply(rsp.get(), );
+        // Send it back to client;
+        socket.send(reply);
     }
 }
 

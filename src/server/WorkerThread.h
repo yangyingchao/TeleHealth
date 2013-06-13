@@ -2,7 +2,7 @@
 #define _WORKERTHREAD_H_
 
 #include "Thread.h"
-#include "Socket.h"
+
 #include "MessageProcessor.h"
 #include "ThreadPool.h"
 

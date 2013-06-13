@@ -11,13 +11,13 @@ typedef shared_ptr<ConfigParser> ConfigParserPtr;
 class ConfigParser
 {
 public:
-    ConfigParser();
     virtual ~ConfigParser();
     static ConfigParserPtr GetConfigParserWithParams(int argc, char** argv);
     const string& GetRootDirectory();
     const char* GetServerPort();
 
 private:
+    ConfigParser();
     bool m_valid;
     string m_root;
 };

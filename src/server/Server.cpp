@@ -10,10 +10,8 @@
 #include "LogUtils.h"
 #include "DBThread.h"
 #include "WorkerThread.h"
-#include "Socket.h"
 #include "ThreadPool.h"
 #include "ConfigParser.h"
-
 #include "CommandHandlerAggregator.h"
 
 using namespace std;
@@ -39,6 +37,8 @@ int xStep = 1;
 #endif
 
 static ThreadPool<WorkerThread>* gWorkerThreadPool = NULL;
+
+const int IO_THREADS = 1;
 
 void CleanupThreadPool()
 {
@@ -80,11 +80,20 @@ int main (int argc, char** argv)
     // TODO:
     // XXX:
 
+    OUT_STEP("Preparing sockets ... \n");
+    ContextPtr pContext(new context_t(IO_THREADS));
+
+    socket_t clients(*pContext, ZMQ_ROUTER);
+    clients.bind("tcp://*:5555");
+
+    socket_t workers (*pContext, ZMQ_DEALER);
+    workers.bind ("inproc://workers");
+
     OUT_STEP("Prepare ThreadPool ... \n");
 
     if (!gWorkerThreadPool)
     {
-        gWorkerThreadPool = ThreadPool<WorkerThread>::GetInstance();
+        gWorkerThreadPool = ThreadPool<WorkerThread>::GetInstance(pContext);
     }
 
     if (!gWorkerThreadPool)

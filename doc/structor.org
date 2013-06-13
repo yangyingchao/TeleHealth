@@ -1,0 +1,57 @@
+#+TITLE: structure
+#+AUTHOR: Yang, Ying-chao
+#+OPTIONS: ^:nil author:nil timestamp:nil creator:nil
+
+#+BEGIN_HTML
+<span style="color: #0000ff;">Author: </span><a href="http://www.cnblogs.com/yangyingchao" target="_blank">Tubo<span style="color: #0000ff;"><b></b></span></a>
+#+END_HTML
+
+#+CAPTION: title
+
+* Server Structure
+
+
+  #+BEGIN_SRC text
+
+
+                          +--------------------+
+                          |   SERVER PORT      |   frontend
+                          +--------------------+
+                          |     PROXY          |
+                          +--------------------+
+                          |       BROKER       |  backend
+                          +---------+----------+
+                                    ^
+                                    |
+          +-------------------------+---------------------------+
+          |                         |                           |
+          |               +---------+--------+                  |
+          |               |                  |                  |
+          |               |                  |                  |
+          v               v                  v                  v
+   +-----------+    +-----------+      +-----------+       +-------------+
+   |   Node1   |    |  Node2    |      |  Node3    |       |  NodeN      |
+   +-----------+    +-----------+      +-----------+       +-------------+
+   |           |    |           |      |           |       |             |
+   +-----------+    +-----------+      +-----------+       +-------------+
+
+
+  #+END_SRC
+
+** Frontend
+
+*** Frontend listens to a port which is used for clients to connect.
+
+*** Port should be specified by command line argument or configuration  file
+
+
+
+** Backend
+
+*** Backend is a port that is going to be connected by all server nodes.
+
+*** Should be configured by config file or command line param.
+
+* Server Nodes
+
+*** Server Nodes should be added or removed in the run-time.

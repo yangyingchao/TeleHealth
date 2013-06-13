@@ -5,7 +5,10 @@
 #include <zmq.h>
 #include <zmq.hpp>
 
-typedef shared_ptr<zmq::message_t> ZTHMessagePtr;
+using namespace std;
+using namespace zmq;
 
+typedef shared_ptr<context_t> ContextPtr;
+typedef shared_ptr<message_t> MessagePtr;
 
 #endif /* _ZMQWRAPPER_H_ */
