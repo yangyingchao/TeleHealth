@@ -13,13 +13,19 @@ class ConfigParser
 public:
     virtual ~ConfigParser();
     static ConfigParserPtr GetConfigParserWithParams(int argc, char** argv);
-    const string& GetRootDirectory();
-    const char* GetServerPort();
+    const string& GetRootDirectory() const;
+    const uint32 GetIoThreadNumber() const;
+    const string& GetExternalAddress() const;
+    const string& GetDBAddress() const;
+    const string& GetDealerAddress() const;
 
 private:
     ConfigParser();
     bool m_valid;
     string m_root;
+    string m_externalAddr;
+    string m_dbAddr;
+    string m_dealerAddr;
 };
 
 #endif /* _CONFIGPARSER_H_ */

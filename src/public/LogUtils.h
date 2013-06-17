@@ -22,4 +22,21 @@
 #endif
 #endif
 
+#define handle_error(msg)                               \
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#ifdef DEBUG
+int xStep = 1;
+#define OUT_STEP(fmt, args...)                                          \
+    do {                                                                \
+        const char* file = __FILE__, *ptr = strstr(file, "..");         \
+        if (!ptr) ptr = file; else while (*ptr == '.' || *ptr == '\\' || *ptr == '/') ++ptr; \
+        printf("%s(%d)\t-%s, Step - %d:\t", ptr, __LINE__,__FUNCTION__, xStep++); \
+        printf(fmt, ##args);                                            \
+    } while(0)
+#else
+#define OUT_STEP(fmt, ...)
+#endif
+
+
 #endif /* _LOGUTILS_H_ */

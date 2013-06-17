@@ -8,7 +8,10 @@ static const char* FAKE_PORT = "5678";
 /* See description in header file. */
 ConfigParser::ConfigParser()
         : m_root("/var/tmp/server"),
-          m_valid(true)
+          m_valid(true),
+          m_externalAddr("tcp://*5555"),
+          m_dealerAddr("tcp://*:5556"),
+          m_DBAddress("ipc://THDatabase.ipc")
 {
     if (!dir_exist(m_root.c_str()) && !MakeDirectory(m_root.c_str()))
     {
@@ -39,13 +42,31 @@ ConfigParserPtr ConfigParser::GetConfigParserWithParams(int argc, char** argv)
 }
 
 /* See description in header file. */
-const string& ConfigParser::GetRootDirectory()
+const string& ConfigParser::GetRootDirectory() const
 {
     return m_root;
 }
 
 /* See description in header file. */
-const char* ConfigParser::GetServerPort()
+const uint32 ConfigParser::GetIoThreadNumber() const
 {
-    return FAKE_PORT;
+    return 1;
+}
+
+/* See description in header file. */
+const string& ConfigParser::GetExternalAddress() const
+{
+    return m_externalAddr;
+}
+
+/* See description in header file. */
+const string& ConfigParser::GetDBAddress() const
+{
+    return m_dbAddr;
+}
+
+/* See description in header file. */
+const string& ConfigParser::GetDealerAddress() const
+{
+    return m_dealerAddr;
 }
