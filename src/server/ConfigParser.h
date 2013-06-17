@@ -3,6 +3,8 @@
 
 #include <string>
 #include <SmartPointer.h>
+#include <typedefs.h>
+
 
 class ConfigParser;
 typedef shared_ptr<ConfigParser> ConfigParserPtr;

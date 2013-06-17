@@ -1,6 +1,7 @@
 #ifndef _LOGUTILS_H_
 #define _LOGUTILS_H_
 #include <stdio.h>
+#include <string.h>
 
 #if !defined (PDEBUG)
 #ifdef _WIN32

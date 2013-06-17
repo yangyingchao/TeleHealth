@@ -13,8 +13,8 @@ ede_FILES=Project.ede Makefile.am
 
 SUBDIRS= unittest/
 EXTRA_DIST=Project.ede
-bin_PROGRAMS=server
-server_SOURCES=Server.cpp DBThread.cpp WorkerThread.cpp MessageProcessor.cpp HashTable.cpp ConfigParser.cpp AccountManager.cpp KVDB.cpp KVDBImplLevelDB.cpp
-server_LDADD=
+bin_PROGRAMS=THServer
+THServer_SOURCES=THServer.cpp ConfigParser.cpp
+THServer_LDADD=
 
 # End of Makefile.am
