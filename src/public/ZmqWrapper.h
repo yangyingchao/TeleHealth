@@ -3,8 +3,15 @@
 
 #include "SmartPointer.h"
 #include <zmq.h>
+#include "typedefs.h"
 
-using namespace std;
+namespace google
+{
+namespace protobuf
+{
+class Message;
+}
+}
 
 class ZmqContext
 {
@@ -15,46 +22,79 @@ public:
      * @param threadNumber - Number of thread number.
      * @return ZmqContext
      */
-    ZmqContext(int threadNumber = 1)
-    {
-        m_pContext = zmq_ctx_new();
-        if (m_pContext)
-        {
-            if (zmq_ctx_set(m_pContext, ZMQ_IO_THREADS, threadNumber))
-            {
-                (void)zmq_ctx_destroy(m_pContext);
-            }
-        }
-    }
+    ZmqContext(int threadNumber = 1);
+
 
     /**
-     * @name ZmqContext - 
+     * @name ZmqContext - Destructor.
      * @return void
      */
-    virtual ~ZmqContext()
-    {
-        if (m_pContext)
-        {
-            (void)zmq_ctx_destroy(m_pContext);
-        }
-    }
+    virtual ~ZmqContext();
 
     /**
      * @name SetMaxSockets - sets the maximum number of sockets allowed on the context
      * @param number - Number of sockets allowed.
      * @return 0 if succeeded, or -1 otherwise.
      */
-    int SetMaxSockets(int number)
-    {
-        return zmq_ctx_set(m_pContext, ZMQ_MAX_SOCKETS, number);
-    }
+    int SetMaxSockets(int sockNumber);
 
-    void* get() const
-    {
-        return m_pContext;
-    }
+    /**
+     * @name get -- return real pointer of context.
+
+      @return void*
+    */
+    void* get() const;
 
 private:
     void* m_pContext;
 };
+
+typedef shared_ptr<ZmqContext> ZmqContextPtr;
+
+/**
+ * ZmqMessage -- Wrapper of zmq_msg_t.
+ */
+
+class ZmqMessage
+{
+public:
+    /**
+     * Default constructor.
+     */
+    ZmqMessage();
+
+    /**
+     * @name ZmqMessage - constructor using internal THMessage.
+     * @param pMessage -  shared pointer of message instance.
+     * @return ZmqMessage
+     */
+     // ZmqMessage(void* data, uint32 size_t size);
+    ZmqMessage(shared_ptr<google::protobuf::Message> pMessage);
+
+    virtual ~ZmqMessage();
+
+    /**
+     * @name get - Return raw pointer of zmq_msg_t;
+     * @return void*
+     */
+    zmq_msg_t* get() const;
+
+    /**
+     * @name data - Return raw data.
+     * @return void*
+     */
+    void* data() const;
+
+    /**
+     * @name size - Return size of raw data.
+     * @return void*
+     */
+    uint32 size() const;
+private:
+    void Reset();
+    zmq_msg_t* m_pMsg;
+};
+
+typedef shared_ptr<ZmqMessage> ZmqMessagePtr;
+
 #endif /* _ZMQWRAPPER_H_ */

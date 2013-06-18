@@ -67,7 +67,7 @@ PROGRAMS = $(bin_PROGRAMS)
 am_DbServer_OBJECTS = DBServer.$(OBJEXT)
 DbServer_OBJECTS = $(am_DbServer_OBJECTS)
 DbServer_DEPENDENCIES =
-am_THServer_OBJECTS = THServer.$(OBJEXT) ConfigParser.$(OBJEXT)
+am_THServer_OBJECTS = THServer.$(OBJEXT)
 THServer_OBJECTS = $(am_THServer_OBJECTS)
 THServer_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -263,7 +263,7 @@ top = ../../
 ede_FILES = Project.ede Makefile.am
 SUBDIRS = unittest/
 EXTRA_DIST = Project.ede
-THServer_SOURCES = THServer.cpp ConfigParser.cpp
+THServer_SOURCES = THServer.cpp
 DbServer_SOURCES = DBServer.cpp
 THServer_LDADD = 
 DbServer_LDADD = 
@@ -360,7 +360,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ConfigParser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DBServer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/THServer.Po@am__quote@
 

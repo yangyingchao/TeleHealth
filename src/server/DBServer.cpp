@@ -4,9 +4,10 @@
 #include <pthread.h>
 
 // TODO: Remove this ifdef!
-zmq_msg_t* ProcessDBRequest(const zmq_msg_t& req)
+ZmqMessagePtr ProcessDBRequest(const zmq_msg_t& req)
 {
-    return NULL;
+    ZmqMessagePtr rep;
+    return rep;
 }
 
 int main(int argc, char *argv[])
@@ -58,11 +59,14 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        zmq_msg_t* rsp = ProcessDBRequest(req);
+        ZmqMessagePtr rsp = ProcessDBRequest(req);
 
         // XXX: Received DB operation request.
         PDEBUG ("DBThread: message received from WorkerThread" );
-        zmq_msg_send(rsp, dbSock, 0);
+        if (rsp && rsp->get() && !rsp->size())
+        {
+            zmq_msg_send(rsp->get(), dbSock, 0);
+        }
     }
 
     return 0;
