@@ -7,14 +7,14 @@
    (ede-proj-target-makefile-program "THServer"
     :name "THServer"
     :path ""
-    :source '("THServer.cpp" "ConfigParser.cpp")
-    :auxsource '("ConfigParser.h")
+    :source '("THServer.cpp")
     :configuration-variables 'nil
     )
    (ede-proj-target-makefile-program "DbServer"
     :name "DbServer"
     :path ""
     :source '("DBServer.cpp")
+    :configuration-variables 'nil
     )
    )
   :makefile-type 'Makefile.am

@@ -13,6 +13,6 @@ ede_FILES=Project.ede Makefile.am
 SUBDIRS= ProtocolBuffer/
 EXTRA_DIST=Project.ede
 lib_LTLIBRARIES=libthpub.la
-libthpub_la_SOURCES=DataBase.h StringUtils.hpp DataBase/DataBase.cpp generated/c/THMessage.pb.cc generated/c/THMessage.pb.h Utils.cpp Socket.cpp MessageBase.cpp DataBlob.cpp SocketTcp.cpp SockUnix.cpp
+libthpub_la_SOURCES=DataBase.h StringUtils.hpp generated/c/THMessage.pb.cc generated/c/THMessage.pb.h Utils.cpp MessageBase.cpp DataBlob.cpp ConfigParser.cpp
 
 # End of Makefile.am

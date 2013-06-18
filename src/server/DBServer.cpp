@@ -4,13 +4,10 @@
 #include <pthread.h>
 
 // TODO: Remove this ifdef!
-#if 0
-
-MessagePtr ProcessDBRequest(const message_t& req)
+zmq_msg_t* ProcessDBRequest(const zmq_msg_t& req)
 {
-    return new message_t;
+    return NULL;
 }
-#endif // End of #if 0
 
 int main(int argc, char *argv[])
 {
@@ -37,7 +34,7 @@ int main(int argc, char *argv[])
         handle_error("Failed to create dbSock for THServer\n");
     }
 
-    if (!zmq_bind(frontEnd, config->GetDBAddress().c_str()))
+    if (!zmq_bind(dbSock, config->GetDBAddress().c_str()))
     {
         fprintf(stderr, "ERROR: addr: %s\n", config->GetDBAddress().c_str());
         handle_error("Failed to bind for external address");
@@ -45,27 +42,28 @@ int main(int argc, char *argv[])
 
     // TODO: here we simply created one process to handle all messages, if this
     // becomes a bottleneck someday, we can create multiple threads to do the job.
-// TODO: Remove this ifdef!
-#if 0
-
-while (true)
+    zmq_msg_t req;
+    if (zmq_msg_init(&req))
     {
-        message_t request;
-        dbSock.recv(&request);
-        if (!request.size() || !request.data())
+        handle_error("Failed to init msg\n");
+    }
+
+    while (true)
+    {
+        zmq_msg_recv(&req, dbSock, 0);
+
+        if (!zmq_msg_data(&req) || !zmq_msg_size(&req))
         {
-            PDEBUG ("Invalid data received! Length: %lu, data: %p\n",
-                    request.size(), request.data());
+            PDEBUG ("Invalid data received!");
             continue;
         }
 
-        MessagePtr rsp = ProcessDBRequest(request);
+        zmq_msg_t* rsp = ProcessDBRequest(req);
 
         // XXX: Received DB operation request.
         PDEBUG ("DBThread: message received from WorkerThread" );
-        dbSock.send(*rsp);
+        zmq_msg_send(rsp, dbSock, 0);
     }
-#endif // End of #if 0
 
-return 0;
+    return 0;
 }

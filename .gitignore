@@ -56,3 +56,4 @@ src/server/test
 /src/client/client
 /src/server/unittest/test
 /src/server/THServer
+/src/server/DbServer

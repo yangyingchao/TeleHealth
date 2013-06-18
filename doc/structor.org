@@ -45,7 +45,6 @@
 *** Port should be specified by command line argument or configuration  file
 
 
-
 ** Backend
 
 *** Backend is a port that is going to be connected by all server nodes.
@@ -55,3 +54,9 @@
 * Server Nodes
 
 *** Server Nodes should be added or removed in the run-time.
+
+*** Server Nodes should connect to DB Node(server) when necessary.
+
+* DataBase Server
+
+** Database server is in separeted Node(Process, or totally on other machine)

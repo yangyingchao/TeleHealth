@@ -13,8 +13,10 @@ ede_FILES=Project.ede Makefile.am
 
 SUBDIRS= unittest/
 EXTRA_DIST=Project.ede
-bin_PROGRAMS=THServer
+bin_PROGRAMS=THServer DbServer
 THServer_SOURCES=THServer.cpp ConfigParser.cpp
+DbServer_SOURCES=DBServer.cpp
 THServer_LDADD=
+DbServer_LDADD=
 
 # End of Makefile.am
