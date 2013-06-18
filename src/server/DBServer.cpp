@@ -1,7 +1,6 @@
 #include <ZmqWrapper.h>
 #include <LogUtils.h>
 #include "ConfigParser.h"
-#include <pthread.h>
 
 // TODO: Remove this ifdef!
 ZmqMessagePtr ProcessDBRequest(const zmq_msg_t& req)

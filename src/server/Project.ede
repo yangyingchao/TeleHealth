@@ -16,6 +16,11 @@
     :source '("DBServer.cpp")
     :configuration-variables 'nil
     )
+   (ede-proj-target-makefile-program "Workers"
+    :name "Workers"
+    :path ""
+    :source '("WorkerNode.cpp")
+    )
    )
   :makefile-type 'Makefile.am
   :variables '(("AM_LDFLAGS" . "-lprotobuf -lz  -lzmq -pthread -lthpub -L../public -lsqlite3 -lleveldb") ("AM_CPPFLAGS" . "-I../public -I../public/generated/c"))

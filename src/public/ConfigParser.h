@@ -4,6 +4,7 @@
 #include <string>
 #include <SmartPointer.h>
 #include <typedefs.h>
+#include <map>
 
 /** ConfigSection -- single section of config file.
  */
@@ -45,12 +46,13 @@ class ConfigParser
 {
 public:
     virtual ~ConfigParser();
-    static ConfigParserPtr GetConfigParserWithParams(int argc, char** argv);
+    static shared_ptr<ConfigParser>  GetConfigParserWithParams(int argc, char** argv);
     const string& GetRootDirectory() const;
-    const uint32 GetIoThreadNumber() const;
     const string& GetExternalAddress() const;
     const string& GetDBAddress() const;
     const string& GetDealerAddress() const;
+    uint32 GetThreadsPerNode() const;
+    uint32 GetIoThreadNumber() const;
 
 private:
     ConfigParser(const string& configFile);

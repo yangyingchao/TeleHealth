@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.12.4 -*- Autoconf -*-
+# generated automatically by aclocal 1.12.6 -*- Autoconf -*-
 
 # Copyright (C) 1996-2012 Free Software Foundation, Inc.
 
@@ -1645,11 +1645,6 @@ AC_CACHE_VAL([lt_cv_sys_max_cmd_len], [dnl
     lt_cv_sys_max_cmd_len=8192;
     ;;
 
-  mint*)
-    # On MiNT this can take a long time and run out of memory.
-    lt_cv_sys_max_cmd_len=8192;
-    ;;
-
   amigaos*)
     # On AmigaOS with pdksh, this test takes hours, literally.
     # So we just punt and use a minimum line length of 8192.
@@ -2239,7 +2234,7 @@ BEGIN {RS=" "; FS="/|\n";} {
     mingw* | cegcc*) lt_search_path_spec=`$ECHO "$lt_search_path_spec" |\
       $SED 's,/\([[A-Za-z]]:\),\1,g'` ;;
   esac
-  sys_lib_search_path_spec=`$ECHO "/opt/Funtoo/lib /opt/Funtoo/usr/lib $lt_search_path_spec" | $lt_NL2SP`
+  sys_lib_search_path_spec=`$ECHO "$lt_search_path_spec" | $lt_NL2SP`
 else
   sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
 fi])
@@ -2467,11 +2462,11 @@ darwin* | rhapsody*)
   version_type=darwin
   need_lib_prefix=no
   need_version=no
-  library_names_spec='${libname}${release}${versuffix}$shared_ext ${libname}${release}${major}$shared_ext ${libname}$shared_ext'
+  library_names_spec='${libname}${release}${major}$shared_ext ${libname}$shared_ext'
   soname_spec='${libname}${release}${major}$shared_ext'
   shlibpath_overrides_runpath=yes
   shlibpath_var=DYLD_LIBRARY_PATH
-  shrext_cmds='`test .$module = .yes && echo .bundle || echo .dylib`'
+  shrext_cmds='`test .$module = .yes && echo .so || echo .dylib`'
 m4_if([$1], [],[
   sys_lib_search_path_spec="$sys_lib_search_path_spec /usr/local/lib"])
   sys_lib_dlsearch_path_spec='/usr/local/lib /lib /usr/lib'
@@ -4807,10 +4802,7 @@ _LT_EOF
       _LT_TAGVAR(hardcode_direct, $1)=no
       _LT_TAGVAR(hardcode_shlibpath_var, $1)=no
       _LT_TAGVAR(hardcode_libdir_flag_spec, $1)='${wl}-rpath,$libdir'
-	  # On interix, -E/--export-dynamic exists, but seems broken in some
-	  # cases. It isn't even possible to link a -E built shared lib to
-	  # another shared library (with or without -E).
-      _LT_TAGVAR(export_dynamic_flag_spec, $1)=
+      _LT_TAGVAR(export_dynamic_flag_spec, $1)='${wl}-E'
       # Hack: On Interix 3.x, we cannot compile PIC because of a broken gcc.
       # Instead, shared libraries are loaded at an image base (0x10000000 by
       # default) and relocated if they conflict, which is a slow very memory
@@ -4818,11 +4810,7 @@ _LT_EOF
       # 256 KiB-aligned image base between 0x50000000 and 0x6FFC0000 at link
       # time.  Moving up from 0x10000000 also allows more sbrk(2) space.
       _LT_TAGVAR(archive_cmds, $1)='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
-	  # It does not seem to have any positive or negative impact to retain
-	  # symbols or not. The only thing that happens is gazillions of warnings
-	  # polluting the linker output, as interix'ld doesn't seem to be able
-	  # to correctly handle retaining.
-      _LT_TAGVAR(archive_expsym_cmds, $1)="$_LT_TAGVAR(archive_cmds, $1)"
+      _LT_TAGVAR(archive_expsym_cmds, $1)='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
       ;;
 
     gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
@@ -6382,10 +6370,7 @@ if test "$_lt_caught_CXX_error" != yes; then
 	_LT_TAGVAR(hardcode_direct, $1)=no
 	_LT_TAGVAR(hardcode_shlibpath_var, $1)=no
 	_LT_TAGVAR(hardcode_libdir_flag_spec, $1)='${wl}-rpath,$libdir'
-	# On interix, -E/--export-dynamic exists, but seems broken in some
-	# cases. It isn't even possible to link a -E built shared lib to
-	# another shared library (with or without -E).
-	_LT_TAGVAR(export_dynamic_flag_spec, $1)=
+	_LT_TAGVAR(export_dynamic_flag_spec, $1)='${wl}-E'
 	# Hack: On Interix 3.x, we cannot compile PIC because of a broken gcc.
 	# Instead, shared libraries are loaded at an image base (0x10000000 by
 	# default) and relocated if they conflict, which is a slow very memory
@@ -6393,11 +6378,7 @@ if test "$_lt_caught_CXX_error" != yes; then
 	# 256 KiB-aligned image base between 0x50000000 and 0x6FFC0000 at link
 	# time.  Moving up from 0x10000000 also allows more sbrk(2) space.
 	_LT_TAGVAR(archive_cmds, $1)='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
-	# It does not seem to have any positive or negative impact to retain
-	# symbols or not. The only thing that happens is gazillions of warnings
-	# polluting the linker output, as interix'ld doesn't seem to be able
-	# to correctly handle retaining.
-	_LT_TAGVAR(archive_expsym_cmds, $1)="$_LT_TAGVAR(archive_cmds, $1)"
+	_LT_TAGVAR(archive_expsym_cmds, $1)='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
 	;;
       irix5* | irix6*)
         case $cc_basename in
@@ -8653,7 +8634,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],
 [am__api_version='1.12'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
-m4_if([$1], [1.12.4], [],
+m4_if([$1], [1.12.6], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
 
@@ -8669,7 +8650,7 @@ m4_define([_AM_AUTOCONF_VERSION], [])
 # Call AM_AUTOMAKE_VERSION and AM_AUTOMAKE_VERSION so they can be traced.
 # This function is AC_REQUIREd by AM_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-[AM_AUTOMAKE_VERSION([1.12.4])dnl
+[AM_AUTOMAKE_VERSION([1.12.6])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])

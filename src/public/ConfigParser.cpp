@@ -1,11 +1,12 @@
 #include "ConfigParser.h"
 #include <Utils.h>
 #include <getopt.h>
+#include "LogUtils.h"
 
 static const char* FAKE_PORT = "5678";
 
 /* See description in header file. */
-ConfigParser::ConfigParser()
+ConfigParser::ConfigParser(const string& configFile)
         : m_root("/var/tmp/server"),
           m_valid(true),
           m_externalAddr("tcp://localhost:5555"),
@@ -25,9 +26,10 @@ ConfigParser::~ConfigParser()
 }
 
 /* See description in header file. */
-ConfigParserPtr ConfigParser::GetConfigParserWithParams(int argc, char** argv)
+shared_ptr <ConfigParser>  ConfigParser::GetConfigParserWithParams(int argc,
+                                                                   char** argv)
 {
-    struct option[] options = {
+    struct option options[] = {
 #define X(x, y, z)       {#x, y, 0, z}
         X(config,  required_argument, 'c'),
         X(serverAddr, required_argument, 's'),
@@ -53,7 +55,7 @@ ConfigParserPtr ConfigParser::GetConfigParserWithParams(int argc, char** argv)
         {
             case 0:
             {
-                printf("option %s", options[option_index].name);
+                printf("option %s", options[optionIndex].name);
                 if (optarg)
                     printf(" with arg %s", optarg);
                 printf("\n");
@@ -107,7 +109,7 @@ const string& ConfigParser::GetRootDirectory() const
 }
 
 /* See description in header file. */
-const uint32 ConfigParser::GetIoThreadNumber() const
+uint32 ConfigParser::GetIoThreadNumber() const
 {
     return 1;
 }
@@ -128,6 +130,13 @@ const string& ConfigParser::GetDBAddress() const
 const string& ConfigParser::GetDealerAddress() const
 {
     return m_dealerAddr;
+}
+
+
+/* See description in header file. */
+uint32 ConfigParser::GetThreadsPerNode() const
+{
+    return 64;
 }
 
 /* See description in header file. */

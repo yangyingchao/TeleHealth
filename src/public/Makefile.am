@@ -6,6 +6,7 @@
 # http://cedet.sourceforge.net/ede.shtml
 #
 AM_CPPFLAGS=-Igenerated/c `pkg-config --cflags uuid`
+AM_LDFLAGS=`pkg-config --libs uuid`
 
 top=../../
 ede_FILES=Project.ede Makefile.am

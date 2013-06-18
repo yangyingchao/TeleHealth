@@ -3,7 +3,7 @@
 (ede-proj-project "thpub"
   :file "Project.ede"
   :name "thpub"
-  :targets (list 
+  :targets (list
    (ede-proj-target-makefile-shared-object "thpub"
     :name "thpub"
     :path ""
@@ -13,6 +13,6 @@
     )
    )
   :makefile-type 'Makefile.am
-  :variables '(("AM_CPPFLAGS" . "-Igenerated/c `pkg-config --cflags uuid`"))
+  :variables '(("AM_CPPFLAGS" . "-Igenerated/c `pkg-config --cflags uuid`") ("AM_LDFLAGS" . "`pkg-config --libs uuid`"))
   :configuration-variables 'nil
   )
