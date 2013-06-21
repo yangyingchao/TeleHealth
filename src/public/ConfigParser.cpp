@@ -166,3 +166,11 @@ string ConfigSection::GetConfig(const string& key) const
 {
     return string();
 }
+
+// This should really be a internal addr.
+const string tmpNodeMgtAddr("tcp://localhost:5559");
+/* See description in header file. */
+const string& ConfigParser::GetNodeMgtAddress() const
+{
+    return tmpNodeMgtAddr;
+}

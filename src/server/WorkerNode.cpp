@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <vector>
 
+static const char* NODE_INPROC_ADDR = "inproc://worker_node.inproc";
+
 ZmqMessagePtr ProcessRequest(const zmq_msg_t& req)
 {
     ZmqMessagePtr rep;
@@ -60,7 +62,6 @@ void* WorkerThread(void* ctxt)
 
 int main(int argc, char *argv[])
 {
-
     OUT_STEP("Parse Configuration ...\n");
     ConfigParserPtr config = ConfigParser::GetConfigParserWithParams(argc, argv);
     if (!config)
@@ -73,6 +74,26 @@ int main(int argc, char *argv[])
     if (!ctxt.get())
     {
         handle_error("Failed to create ZmqContext!\n");
+    }
+
+    OUT_STEP("Creating inprocess socket\n");
+    void* leader = zmq_socket(ctxt.get(), ZMQ_REP);
+    if (!leader)
+    {
+        handle_error("Failed to create inprocess sock!\n");
+    }
+
+    if (zmq_bind(leader, NODE_INPROC_ADDR) == -1)
+    {
+        handle_error("Failed to bind socket to in-process sock.\n");
+    }
+
+
+    OUT_STEP("Creating sock to communicate with boss\n");
+    void* boss = zmq_socket(ctxt.get(), ZMQ_REQ);
+    if (!boos || zmq_connect(boss, config->GetNodeMgtAddress()))
+    {
+        handle_error("Failed to communicate with my boos\n");
     }
 
     OUT_STEP("Creating worker threads");
@@ -91,6 +112,33 @@ int main(int argc, char *argv[])
         }
     }
 
-//TODO: Signal handling goes here!
+    // Select between boss and leader..
+    while (true)
+    {
+
+        zmq_pollitem_t items = {
+            {boos, 0, ZMQ_POLLIN, 0},
+            {leader, 0, ZMQ_POLLIN, 0}
+        };
+
+        int ret = zmq_poll(items, 2, -1);
+        if (ret == -1)
+        {
+            break;
+        }
+
+        // Boss assigned jobs ...
+        if (items[0].revents & ZMQ_POLLIN)
+        {
+
+        }
+
+        // Workers sent report to leader ...
+        if (items[1].revents & ZMQ_POLLIN)
+        {
+
+        }
+    }
+
     return 0;
 }

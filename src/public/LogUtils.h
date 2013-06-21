@@ -9,8 +9,8 @@
     do {                                                                \
     const char* file = __FILE__, *ptr = strstr(file, "..");             \
     if (!ptr) ptr = file; else while (*ptr == '.' || *ptr == '\\' || *ptr == '/') ++ptr; \
-        printf("%s(%d)-%s:\t: ", ptr, __LINE__,__FUNCTION__);           \
-        printf(fmt, __VA_ARGS__);                                       \
+    fprintf(stderr, "%s(%d)-%s:\t: ", ptr, __LINE__,__FUNCTION__);       \
+    fprintf(stderr, fmt, __VA_ARGS__);                                   \
     } while(0)
 #else
 #define PDEBUG(fmt, args...)                                            \
