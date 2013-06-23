@@ -52,6 +52,7 @@ public:
     const string& GetDBAddress() const;
     const string& GetDealerAddress() const;
     const string& GetNodeMgtAddress() const;
+    const string& GetThreadMgtAddress() const;
     uint32 GetThreadsPerNode() const;
     uint32 GetIoThreadNumber() const;
 

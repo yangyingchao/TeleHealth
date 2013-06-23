@@ -19,7 +19,9 @@
    (ede-proj-target-makefile-program "Workers"
     :name "Workers"
     :path ""
-    :source '("WorkerNode.cpp")
+    :source '("WorkerNode.cpp" "MessageProcessor.cpp" "WorkerThread.cpp")
+    :auxsource '("MessageProcessor.h" "WorkerThread.h" "ThreadPool.h" "Pool.h")
+    :configuration-variables 'nil
     )
    )
   :makefile-type 'Makefile.am

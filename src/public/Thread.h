@@ -26,11 +26,6 @@ public:
 
     virtual bool Start() = 0;
 
-    void SetContext(ContextPtr  pContext)
-    {
-        m_pContext = pContext;
-    }
-
     virtual void Stop()
     {
         m_stop = true;
@@ -46,7 +41,6 @@ public:
 protected:
     bool      m_stop;
     pthread_t m_tid;
-    ContextPtr     m_pContext;
 };
 
 #endif /* _THREAD_H_ */

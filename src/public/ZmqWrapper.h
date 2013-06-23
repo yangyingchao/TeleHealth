@@ -95,6 +95,45 @@ private:
     zmq_msg_t* m_pMsg;
 };
 
+
 typedef shared_ptr<ZmqMessage> ZmqMessagePtr;
+
+class ZmqSocket
+{
+public:
+    ZmqSocket(ZmqContextPtr context, int type);
+    virtual ~ZmqSocket();
+
+    /**
+     * @name IsValid - Check if this socket is valid.
+     * @return bool
+     */
+    bool IsValid();
+
+    /**
+     * @name Send - Sends a msg
+     * @param msg -  message to send.
+     * @return int
+     */
+
+    int Send(ZmqMessagePtr msg);
+    /**
+     * @name Recv - Receives a msg.
+     * @return ZmqMessagePtr
+     */
+    ZmqMessagePtr Recv();
+
+    int Bind();
+    int Connect(const char* addr);
+    int Connect(const string& addr);
+    int Bind(const char* addr);
+    int Bind(const string& addr);
+    void* get();
+private:
+    void* m_sock;
+    bool m_valid;
+};
+
+typedef shared_ptr<ZmqSocket> ZmqSocketPtr;
 
 #endif /* _ZMQWRAPPER_H_ */

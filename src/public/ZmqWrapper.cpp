@@ -62,6 +62,13 @@ ZmqMessage::ZmqMessage(void* data, uint32 size_t size)
 ZmqMessage::ZmqMessage(shared_ptr <google::protobuf::Message> pMessage)
 {
     m_pMsg = NEW zmq_msg_t;
+    if (m_pMsg)
+    {
+        if (zmq_msg_init(m_pMsg))
+        {
+            Reset();
+        }
+    }
     //TODO: Init m_pMsg based on pMessage.
 }
 
@@ -69,6 +76,7 @@ void ZmqMessage::Reset()
 {
     if (m_pMsg)
     {
+        zmq_msg_close(m_pMsg);
         delete m_pMsg;
         m_pMsg = NULL;
     }
@@ -77,7 +85,7 @@ void ZmqMessage::Reset()
 /* See description in header file. */
 ZmqMessage::~ZmqMessage()
 {
-    delete m_pMsg;
+    Reset();
 }
 
 /* See description in header file. */
@@ -97,5 +105,86 @@ void* ZmqMessage::data() const
 zmq_msg_t* ZmqMessage::get() const
 {
     return m_pMsg;
+}
+
+/* See description in header file. */
+ZmqSocket::ZmqSocket(ZmqContextPtr context, int type)
+        : m_sock(NULL),
+          m_valid(false)
+{
+    if (context && context->get())
+    {
+        m_sock = zmq_socket(context->get(), type);
+        if (m_sock)
+        {
+            m_valid = true;
+        }
+    }
+}
+
+/* See description in header file. */
+ZmqSocket::~ZmqSocket()
+{
+    //XXX: Implement this!
+}
+
+/* See description in header file. */
+int ZmqSocket::Send(ZmqMessagePtr msg)
+{
+    return 0;
+}
+
+/* See description in header file. */
+ZmqMessagePtr ZmqSocket::Recv()
+{
+    ZmqMessagePtr msg(new ZmqMessage);
+    int ret = zmq_msg_recv(msg->get(), m_sock, 0);
+    return ZmqMessagePtr();
+}
+
+/* See description in header file. */
+bool ZmqSocket::IsValid()
+{
+    return m_valid;
+}
+
+int ZmqSocket::Bind()
+{
+    return 0;
+}
+
+int ZmqSocket::Connect(const char* addr)
+{
+    int ret = zmq_connect(m_sock, addr);
+    if (ret)
+    {
+        m_valid = false;
+    }
+    return ret;
+}
+
+int ZmqSocket::Connect(const string& addr)
+{
+    return Connect(addr.c_str());
+}
+
+void* ZmqSocket::get()
+{
+    return m_sock;
+}
+
+int ZmqSocket::Bind(const char* addr)
+{
+    int ret = zmq_bind(m_sock, addr);
+    if (ret)
+    {
+        m_valid = false;
+    }
+    return ret;
+}
+
+int ZmqSocket::Bind(const string& addr)
+{
+    return Bind(addr.c_str());
 }
 

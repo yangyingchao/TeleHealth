@@ -9,9 +9,9 @@ static const char* FAKE_PORT = "5678";
 ConfigParser::ConfigParser(const string& configFile)
         : m_root("/var/tmp/server"),
           m_valid(true),
-          m_externalAddr("tcp://localhost:5555"),
-          m_dealerAddr("tcp://localhost:5556"), // Should set to address that not exposed.
-          m_dbAddr("ipc://THDatabase.ipc")
+          m_externalAddr("tcp://127.0.0.1:5555"),
+          m_dealerAddr("tcp://127.0.0.1:5556"), // Should set to address that not exposed.
+          m_dbAddr("tcp://127.0.0.1:5557")
 {
     if (!dir_exist(m_root.c_str()) && !MakeDirectory(m_root.c_str()))
     {
@@ -173,4 +173,11 @@ const string tmpNodeMgtAddr("tcp://localhost:5559");
 const string& ConfigParser::GetNodeMgtAddress() const
 {
     return tmpNodeMgtAddr;
+}
+
+const string threadMgtAddr("inproc://worker_node.inproc");
+/* See description in header file. */
+const string& ConfigParser::GetThreadMgtAddress() const
+{
+    return threadMgtAddr;
 }

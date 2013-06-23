@@ -3,51 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ThreadPool.h"
+#include <ConfigParser.h>
 
 #include <iostream>
 
-#include "THMessage.pb.h"
-
-/* See description in header file. */
-ThreadParam::ThreadParam()
+static inline THMessagePtr Zmsg2Tmsg(ZmqMessagePtr msg)
 {
-    // XXX: Just assume new will always succeed, overwrite new operator someday.
-    pthread_mutex_init(&m_lock, NULL);
-    pthread_cond_init(&m_cond,  NULL);
+    return THMessagePtr();
 }
 
-/* See description in header file. */
-ThreadParam::~ThreadParam()
+static inline ZmqMessagePtr Tmsg2Zmsg(THMessagePtr msg)
 {
-}
-
-
-/* See description in header file. */
-int ThreadParam::WaitForAction()
-{
-    int ret = pthread_mutex_lock(&m_lock);
-    if (ret == 0)
-    {
-        ret = pthread_cond_wait(&m_cond, &m_lock);
-        PDEBUG ("signal received ....\n");
-        ret = pthread_mutex_unlock(&m_lock);
-    }
-    PDEBUG ("return: %d\n", ret);
-    return ret;
-}
-
-/* See description in header file. */
-int ThreadParam::SignalAction()
-{
-    PDEBUG ("%p unlocking ..\n", this);
-    int ret = pthread_mutex_lock(&m_lock);
-    if (ret == 0)
-    {
-        PDEBUG ("ok, signalling....\n");
-        ret = pthread_cond_signal(&m_cond);
-        pthread_mutex_unlock(&m_lock);
-    }
-    return ret;
+    return ZmqMessagePtr();
 }
 
 // Implementation of WorkerThread
@@ -96,18 +63,68 @@ void*  WorkerThread::StaticThreadFunction(void* arg)
 /* See description in header file. */
 void WorkerThread::DoRealWorks()
 {
-    socket_t socket (*m_pContext, ZMQ_REP);
-    socket.connect ("inproc://workers");
-    while (!m_stop)
+    if (!m_pContext || !m_pContext->get())
     {
-        message_t request;
-        socket.recv(&request);
-        THMessage* msg = request.data();
-        THMessagePtr rsp = HandleRequest(msg);
-        //TODO: Error checking, size...
-        message_t reply(rsp.get(), );
-        // Send it back to client;
-        socket.send(reply);
+        return ;
+    }
+
+    ZmqSocket workSock(m_pContext, ZMQ_REP);
+    if (!workSock.IsValid())
+    {
+        handle_error("Failed to create sock for THServer\n");
+    }
+
+    if (workSock.Connect(m_config->GetDealerAddress().c_str()))
+    {
+        fprintf(stderr, "ERROR: addr: %s\n", m_config->GetDealerAddress().c_str());
+        handle_error("Failed to connect to dealler address");
+    }
+
+    // Create reporter sock.
+    ZmqSocket reporter(m_pContext, ZMQ_REQ);
+    if (!reporter.IsValid())
+    {
+        handle_error("Failed to create reporter!");
+    }
+    reporter.Connect(m_config->GetThreadMgtAddress().c_str());
+
+    ZmqMessagePtr msg;
+    while (true)
+    {
+        zmq_pollitem_t items[] = {
+            {reporter.get(), 0, ZMQ_POLLIN, 0},
+            {workSock.get(), 0, ZMQ_POLLIN, 0}
+        };
+
+        int ret = zmq_poll(items, 2, -1);
+        if (ret == -1)
+        {
+            break;
+        }
+
+        // Boss assigned jobs ...
+        if (items[0].revents & ZMQ_POLLIN)
+        {
+
+        }
+
+        // Workers sent report to leader ...
+        if (items[1].revents & ZMQ_POLLIN)
+        {
+            msg = workSock.Recv();
+            if (!msg || !msg->data() || !msg->size())
+            {
+                PDEBUG ("Invalid data received!");
+                continue;
+            }
+
+            ZmqMessagePtr rsp = Tmsg2Zmsg(HandleRequest(Zmsg2Tmsg(msg)));
+            PDEBUG ("Worker: message received from WorkerThread" );
+            if (rsp && rsp->get() && !rsp->size())
+            {
+                workSock.Send(rsp);
+            }
+        }
     }
 }
 
@@ -153,20 +170,18 @@ THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
 }
 
 /* See description in header file. */
-bool WorkerThread::TakeOverSocket(Socket* sk)
-{
-    bool result = false;
-    if (sk)
-    {
-        m_param.m_sock = sk;
-        m_param.SignalAction();
-        result = true;
-    }
-    return  result;
-}
-
-/* See description in header file. */
 void WorkerThread::SetThreadPool(ThreadPool <WorkerThread>* pool)
 {
     m_pPool = pool;
+}
+
+/* See description in header file. */
+void WorkerThread::SetContext(ZmqContextPtr context)
+{
+    m_pContext = context;
+}
+
+void WorkerThread::SetConfig(shared_ptr<ConfigParser> config)
+{
+    m_config = config;
 }

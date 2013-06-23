@@ -3,122 +3,71 @@
 #include "ConfigParser.h"
 #include <pthread.h>
 #include <vector>
+#include "WorkerThread.h"
+
+ZmqContextPtr gContext;
+ConfigParserPtr gConfig;
+
+int xStep = 0;
 
 static const char* NODE_INPROC_ADDR = "inproc://worker_node.inproc";
-
-ZmqMessagePtr ProcessRequest(const zmq_msg_t& req)
+static void SetExtraParameters(WorkerThread* thread, void* param)
 {
-    ZmqMessagePtr rep;
-    return rep;
-}
-
-void* WorkerThread(void* ctxt)
-{
-    if (!ctxt)
+    if (thread)
     {
-        return NULL;
-    }
-
-    void* sock = zmq_socket(ctxt.get(), ZMQ_REP);
-    if (!sock)
-    {
-        handle_error("Failed to create sock for THServer\n");
-    }
-
-    if (!zmq_connect(sock, config->GetDealerAddress().c_str()))
-    {
-        fprintf(stderr, "ERROR: addr: %s\n", config->GetDealerAddress().c_str());
-        handle_error("Failed to connect to dealler address");
-    }
-
-    // TODO: here we simply created one process to handle all messages, if this
-    // becomes a bottleneck someday, we can create multiple threads to do the job.
-    zmq_msg_t req;
-    if (zmq_msg_init(&req))
-    {
-        handle_error("Failed to init msg\n");
-    }
-
-    while (true)
-    {
-        zmq_msg_recv(&req, sock, 0);
-
-        if (!zmq_msg_data(&req) || !zmq_msg_size(&req))
-        {
-            PDEBUG ("Invalid data received!");
-            continue;
-        }
-
-        ZmqMessagePtr rsp = ProcessDBRequest(req);
-
-        // XXX: Received DB operation request.
-        PDEBUG ("DBThread: message received from WorkerThread" );
-        if (rsp && rsp->get() && !rsp->size())
-        {
-            zmq_msg_send(rsp->get(), sock, 0);
-        }
+        thread->SetContext(gContext);
+        thread->SetConfig(gConfig);
     }
 }
 
 int main(int argc, char *argv[])
 {
     OUT_STEP("Parse Configuration ...\n");
-    ConfigParserPtr config = ConfigParser::GetConfigParserWithParams(argc, argv);
-    if (!config)
+    gConfig = ConfigParser::GetConfigParserWithParams(argc, argv);
+    if (!gConfig)
     {
         handle_error("Failed to get configuration\n");
     }
 
     OUT_STEP("Preparing ZMQContext ... \n");
-    ZmqContext ctxt;
-    if (!ctxt.get())
+    gContext.reset(new ZmqContext);
+    if (!gContext || !gContext->get())
     {
         handle_error("Failed to create ZmqContext!\n");
     }
 
     OUT_STEP("Creating inprocess socket\n");
-    void* leader = zmq_socket(ctxt.get(), ZMQ_REP);
-    if (!leader)
+    ZmqSocket leader(gContext, ZMQ_REP);
+    if (!leader.IsValid())
     {
         handle_error("Failed to create inprocess sock!\n");
     }
 
-    if (zmq_bind(leader, NODE_INPROC_ADDR) == -1)
+    if (leader.Bind(gConfig->GetThreadMgtAddress()) == -1)
     {
         handle_error("Failed to bind socket to in-process sock.\n");
     }
 
 
     OUT_STEP("Creating sock to communicate with boss\n");
-    void* boss = zmq_socket(ctxt.get(), ZMQ_REQ);
-    if (!boos || zmq_connect(boss, config->GetNodeMgtAddress()))
+    ZmqSocket boss(gContext, ZMQ_REQ);
+    if (!boss.IsValid() || boss.Connect(gConfig->GetNodeMgtAddress()) == -1)
     {
         handle_error("Failed to communicate with my boos\n");
     }
 
     OUT_STEP("Creating worker threads");
 
-    vector<pthread_t> tids;
-    for (int i = 0; i < config->GetThreadsPerNode(); ++i)
-    {
-        pthread_t tid;
-        if (pthread_create(&tid, NULL, WorkerThread, ) == 0)
-        {
-            tids.push_back(tid);
-        }
-        else
-        {
-            break;
-        }
-    }
+    ThreadPool<WorkerThread> threadPool(gConfig->GetThreadsPerNode(),
+                                        SetExtraParameters, NULL);
 
     // Select between boss and leader..
     while (true)
     {
 
-        zmq_pollitem_t items = {
-            {boos, 0, ZMQ_POLLIN, 0},
-            {leader, 0, ZMQ_POLLIN, 0}
+        zmq_pollitem_t items[] = {
+            {boss.get(), 0, ZMQ_POLLIN, 0},
+            {leader.get(), 0, ZMQ_POLLIN, 0}
         };
 
         int ret = zmq_poll(items, 2, -1);

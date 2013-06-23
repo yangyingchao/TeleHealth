@@ -57,3 +57,4 @@ src/server/test
 /src/server/unittest/test
 /src/server/THServer
 /src/server/DbServer
+/src/server/Workers
