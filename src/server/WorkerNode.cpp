@@ -15,6 +15,7 @@ static void SetExtraParameters(WorkerThread* thread, void* param)
 {
     if (thread)
     {
+        PDEBUG ("Setting for thread: %p\n", thread);
         thread->SetContext(gContext);
         thread->SetConfig(gConfig);
     }
