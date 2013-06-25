@@ -1,0 +1,11 @@
+
+
+enum InternalCommand {
+    InvalidCmd = 0;
+    WorkerThreadAvaiable = 1;
+}
+
+message MgtMsg {
+    required InternalCommand cmd = 1;
+}
+

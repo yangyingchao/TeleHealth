@@ -23,6 +23,10 @@
     :auxsource '("MessageProcessor.h" "WorkerThread.h" "ThreadPool.h" "Pool.h")
     :configuration-variables 'nil
     )
+   (ede-proj-target-makefile-shared-object "libthserver"
+    :name "libthserver"
+    :path ""
+    )
    )
   :makefile-type 'Makefile.am
   :variables '(("AM_LDFLAGS" . "-lprotobuf -lz  -lzmq -pthread -lthpub -L../public -lsqlite3 -lleveldb") ("AM_CPPFLAGS" . "-I../public -I../public/generated/c"))
