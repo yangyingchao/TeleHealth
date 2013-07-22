@@ -1,11 +1,12 @@
 
 
 enum InternalCommand {
-    InvalidCmd = 0;
+    InvalidInternalCmd = 0;
     WorkerThreadAvaiable = 1;
 }
 
 message MgtMsg {
     required InternalCommand cmd = 1;
+    optional string message = 10;
 }
 

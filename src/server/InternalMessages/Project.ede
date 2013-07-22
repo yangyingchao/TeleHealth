@@ -1,0 +1,14 @@
+;; Object protobuf
+;; EDE Project Files are auto generated: Do Not Edit
+(ede-proj-project "protobuf"
+  :file "Project.ede"
+  :name "protobuf"
+  :targets (list 
+   (ede-proj-target-makefile-miscelaneous "protobuf"
+    :name "protobuf"
+    :path ""
+    :source '("InternalMessages.proto" "Makefile.ByHand")
+    :submakefile "Makefile.ByHand"
+    )
+   )
+  )

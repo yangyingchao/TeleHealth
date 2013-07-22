@@ -1,4 +1,5 @@
 *.a
+core
 *.bin
 *.bz2
 *.elf
@@ -58,3 +59,4 @@ src/server/test
 /src/server/THServer
 /src/server/DbServer
 /src/server/Workers
+/src/server/ServerNode

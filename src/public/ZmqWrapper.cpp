@@ -1,6 +1,14 @@
 #include "ZmqWrapper.h"
 #include "generated/c/THMessage.pb.h"
 
+void ZmqMessageDeleter(void* data, void* hint)
+{
+    if (data)
+    {
+        free(data);
+    }
+}
+
 // Implementation of ZmqContext.
 /* See description in header file. */
 ZmqContext::ZmqContext(int threadNumber)
@@ -40,6 +48,7 @@ void* ZmqContext::get() const
 // Implementation of ZmqMessage
 /* See description in header file. */
 ZmqMessage::ZmqMessage()
+        : m_pbMsg(NULL)
 {
     m_pMsg = NEW zmq_msg_t;
     if (m_pMsg && (zmq_msg_init(m_pMsg) == -1))
@@ -48,28 +57,36 @@ ZmqMessage::ZmqMessage()
     }
 }
 
-// TODO: Remove this ifdef!
-#if 0
 /* See description in header file. */
-ZmqMessage::ZmqMessage(void* data, uint32 size_t size)
+ZmqMessage::ZmqMessage(const google::protobuf::Message* pMessage)
+        : m_pbMsg(pMessage)
 {
-    m_pMsg = NEW zmq_msg_t;
-    //XXX: Implement this!
-}
-#endif // End of #if 0
-
-/* See description in header file. */
-ZmqMessage::ZmqMessage(shared_ptr <google::protobuf::Message> pMessage)
-{
-    m_pMsg = NEW zmq_msg_t;
-    if (m_pMsg)
+    if (pMessage)
     {
-        if (zmq_msg_init(m_pMsg))
+        int   size = pMessage->ByteSize();
+        void* data = NULL;
+        if (size > 0)
         {
-            Reset();
+            data = malloc(size);
+        }
+
+        if (data)
+        {
+            m_pMsg = NEW zmq_msg_t;
+            if (m_pMsg && pMessage->SerializeToArray(data, size))
+            {
+                if (zmq_msg_init_data(m_pMsg, data, size, ZmqMessageDeleter, NULL) == -1)
+                {
+                    free(data);
+                    Reset();
+                }
+            }
+            else
+            {
+                free(data);
+            }
         }
     }
-    //TODO: Init m_pMsg based on pMessage.
 }
 
 void ZmqMessage::Reset()
@@ -99,6 +116,11 @@ uint32 ZmqMessage::size() const
 void* ZmqMessage::data() const
 {
     return m_pMsg ? zmq_msg_data(m_pMsg) : NULL;
+}
+
+bool ZmqMessage::IsEmpty() const
+{
+    return (!data() && !size());
 }
 
 /* See description in header file. */
@@ -131,6 +153,10 @@ ZmqSocket::~ZmqSocket()
 /* See description in header file. */
 int ZmqSocket::Send(ZmqMessagePtr msg)
 {
+    if (msg && msg->data() && msg->size())
+    {
+        return zmq_msg_send(msg->get(), m_sock, 0);
+    }
     return 0;
 }
 
@@ -139,7 +165,7 @@ ZmqMessagePtr ZmqSocket::Recv()
 {
     ZmqMessagePtr msg(new ZmqMessage);
     int ret = zmq_msg_recv(msg->get(), m_sock, 0);
-    return ZmqMessagePtr();
+    return msg;
 }
 
 /* See description in header file. */

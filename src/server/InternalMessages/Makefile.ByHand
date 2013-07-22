@@ -1,0 +1,21 @@
+OUTDIR=../
+C_OUTDIR=../
+PY_OUTDIR=../generated/python
+TARGETS=*.proto
+
+default: all
+
+all: $(TARGETS)
+	protoc --proto_path=$(C_OUTDIR) --proto_path=. --cpp_out=$(C_OUTDIR) $^
+	#protoc --proto_path=$(PY_OUTDIR) --proto_path=. --python_out=$(PY_OUTDIR) $^
+
+clean:
+	OLDDIR=$(PWD)
+	cd $(C_OUTDIR)
+	rm -f *pb.h *pb.cc
+	cd $(PY_OUTDIR)
+	rm -rf *.py*
+
+	cd $(OLDDIR)
+
+distclean: clean

@@ -8,7 +8,7 @@
 
 #+CAPTION: title
 
-* Server Structure
+* Base Server (THServer)
 
 
   #+BEGIN_SRC text
@@ -51,12 +51,35 @@
 
 *** Should be configured by config file or command line param.
 
-* Server Nodes
+* Server Nodes (WorkerNode)
+
+** Overview
+
+*** Server nodes should be deployed in the same LAN with Base Server.
 
 *** Server Nodes should be added or removed in the run-time.
 
 *** Server Nodes should connect to DB Node(server) when necessary.
 
-* DataBase Server
+** Components
+
+*** Task Leader
+
+    Task Leader manages a number of workers (WorkerThread) and listens messages sent by
+    boss (THServer).
+
+**** Number of workers is configured by configure file.
+
+**** Task Leader communicate with boss by NodeMgtAddress specified by configuration.
+
+**** Task Leader communicate with workers though ThreadMgtAddress specified by configuration.
+
+*** Workers
+
+    Workers are responsible for hanlding requests from server.
+
+**** Workers should wait for instructions from leaders before taking over tasks from backend of THServer.
+
+* DataBase Server (DBServer)
 
 ** Database server is in separeted Node(Process, or totally on other machine)

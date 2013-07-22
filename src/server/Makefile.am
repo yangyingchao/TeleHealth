@@ -11,14 +11,16 @@ AM_CPPFLAGS=-DDEBUG -I../public -I../public/generated/c
 top=../../
 ede_FILES=Project.ede Makefile.am
 
-SUBDIRS= unittest/
+SUBDIRS= InternalMessages/ unittest/
 EXTRA_DIST=Project.ede
-bin_PROGRAMS=THServer DbServer Workers
+bin_PROGRAMS=THServer DbServer ServerNode
+lib_LTLIBRARIES=libthserver.la
 THServer_SOURCES=THServer.cpp
 DbServer_SOURCES=DBServer.cpp
-Workers_SOURCES=WorkerNode.cpp MessageProcessor.cpp WorkerThread.cpp
+ServerNode_SOURCES=WorkerNode.cpp MessageProcessor.cpp WorkerThread.cpp
+libthserver_la_SOURCES=InternalMessages.pb.cc InternalMessages.cpp
 THServer_LDADD=
 DbServer_LDADD=
-Workers_LDADD=
+ServerNode_LDADD= -lthserver
 
 # End of Makefile.am

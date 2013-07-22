@@ -65,11 +65,10 @@ public:
 
     /**
      * @name ZmqMessage - constructor using internal THMessage.
-     * @param pMessage -  shared pointer of message instance.
+     * @param pMessage -  pointer of message instance.
      * @return ZmqMessage
      */
-     // ZmqMessage(void* data, uint32 size_t size);
-    ZmqMessage(shared_ptr<google::protobuf::Message> pMessage);
+    ZmqMessage(const google::protobuf::Message* msg);
 
     virtual ~ZmqMessage();
 
@@ -90,9 +89,12 @@ public:
      * @return void*
      */
     uint32 size() const;
-private:
+
+    bool IsEmpty() const;
+ private:
     void Reset();
     zmq_msg_t* m_pMsg;
+    const google::protobuf::Message* m_pbMsg;
 };
 
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ThreadPool.h"
+#include "InternalMessages.h"
 #include <ConfigParser.h>
 
 #include <iostream>
@@ -68,6 +69,55 @@ void WorkerThread::DoRealWorks()
         return ;
     }
 
+    // Here we are using raw ProtocolBuffer (PB) message, maybe need to wrap it someday.
+
+    sleep(5);
+    // Create reporter sock.
+    ZmqSocket reporter(m_pContext, ZMQ_REQ);
+    if (!reporter.IsValid())
+    {
+        handle_error("Failed to create reporter!");
+    }
+    reporter.Connect(m_config->GetThreadMgtAddress().c_str());
+
+    // PDEBUG ("connnected reporter ....\n");
+
+    // Report to leader that this worker is available.
+    MgtMsg* mgtMsg = NEW MgtMsg;
+    if (!mgtMsg)
+    {
+        abort();
+    }
+
+    mgtMsg->set_cmd(WorkerThreadAvaiable);
+    mgtMsg->set_message("Hello, leader, I'm here!");
+
+    ZmqMessagePtr zmsg(new ZmqMessage(mgtMsg));
+    if (!zmsg)
+    {
+        abort();
+    }
+
+    int ret = reporter.Send(zmsg);
+    if (ret == -1)
+    {
+        abort();
+    }
+
+    // PDEBUG ("sent to reporter, ret: %d\n", ret);
+
+    zmsg = reporter.Recv();
+    if (!zmsg)
+    {
+        abort();
+    }
+    else
+    {
+        // Check response from leader, if allows to work on, then connect to work sock!
+    }
+
+    // Create work sock.
+
     ZmqSocket workSock(m_pContext, ZMQ_REP);
     if (!workSock.IsValid())
     {
@@ -80,13 +130,6 @@ void WorkerThread::DoRealWorks()
         handle_error("Failed to connect to dealler address");
     }
 
-    // Create reporter sock.
-    ZmqSocket reporter(m_pContext, ZMQ_REQ);
-    if (!reporter.IsValid())
-    {
-        handle_error("Failed to create reporter!");
-    }
-    reporter.Connect(m_config->GetThreadMgtAddress().c_str());
 
     ZmqMessagePtr msg;
     while (true)

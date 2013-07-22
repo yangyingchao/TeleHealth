@@ -8,7 +8,6 @@
 
 using namespace std;
 
-class Message;
 class ConfigParser;
 
 class WorkerThread : public Thread

@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <vector>
 #include "WorkerThread.h"
+#include <unistd.h>
+#include "InternalMessages.h"
 
 ZmqContextPtr gContext;
 ConfigParserPtr gConfig;
@@ -19,6 +21,22 @@ static void SetExtraParameters(WorkerThread* thread, void* param)
         thread->SetContext(gContext);
         thread->SetConfig(gConfig);
     }
+}
+
+static inline ZmqMessagePtr HandleReport(ZmqMessagePtr report)
+{
+    MgtMsg msg;
+    if (msg.ParseFromArray(report->data(), report->size()))
+    {
+        PDEBUG ("Cmd: %d, Message: %s\n", msg.cmd(), msg.message().c_str());
+    }
+    else
+    {
+        PDEBUG ("Failed to parse message!\n");
+    }
+
+    // Just return it for now.
+    return report;
 }
 
 int main(int argc, char *argv[])
@@ -57,11 +75,13 @@ int main(int argc, char *argv[])
         handle_error("Failed to communicate with my boos\n");
     }
 
+    sleep(2);
     OUT_STEP("Creating worker threads");
 
     ThreadPool<WorkerThread> threadPool(gConfig->GetThreadsPerNode(),
                                         SetExtraParameters, NULL);
 
+    OUT_STEP("Waiting for commands or reports....\n");
     // Select between boss and leader..
     while (true)
     {
@@ -86,7 +106,15 @@ int main(int argc, char *argv[])
         // Workers sent report to leader ...
         if (items[1].revents & ZMQ_POLLIN)
         {
+            PDEBUG ("Received reports....\n");
+            ZmqMessagePtr report = leader.Recv();
+            if (!report || report->IsEmpty())
+            {
+                PDEBUG ("Error: no report or empty report!\n");
+                continue;
+            }
 
+            leader.Send(HandleReport(report));
         }
     }
 

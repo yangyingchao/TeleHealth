@@ -16,16 +16,20 @@
     :source '("DBServer.cpp")
     :configuration-variables 'nil
     )
-   (ede-proj-target-makefile-program "Workers"
-    :name "Workers"
+   (ede-proj-target-makefile-program "ServerNode"
+    :name "ServerNode"
     :path ""
     :source '("WorkerNode.cpp" "MessageProcessor.cpp" "WorkerThread.cpp")
     :auxsource '("MessageProcessor.h" "WorkerThread.h" "ThreadPool.h" "Pool.h")
     :configuration-variables 'nil
+    :ldflags '("-lthserver")
     )
    (ede-proj-target-makefile-shared-object "libthserver"
-    :name "libthserver"
+    :name "thserver"
     :path ""
+    :source '("InternalMessages.pb.cc" "InternalMessages.cpp")
+    :auxsource '("InternalMessages.h" "InternalMessages.pb.h")
+    :configuration-variables 'nil
     )
    )
   :makefile-type 'Makefile.am
