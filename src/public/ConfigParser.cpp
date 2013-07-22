@@ -136,7 +136,8 @@ const string& ConfigParser::GetDealerAddress() const
 /* See description in header file. */
 uint32 ConfigParser::GetThreadsPerNode() const
 {
-    return 64;
+    // return 64;
+    return 2;
 }
 
 /* See description in header file. */

@@ -2,6 +2,7 @@
 #include <LogUtils.h>
 #include "ConfigParser.h"
 
+ZmqContextPtr gContext;
 ConfigParserPtr gCofnig;
 
 int xStep = 0;
@@ -10,42 +11,37 @@ int xStep = 0;
  * @name WorkerNodeManagementThread - Separated thread to manage worker nodes.
  * @return void*
  */
-void* WorkerNodeManagementThread(void* ctx)
+void* WorkerNodeManagementThread(void* data)
 {
-// TODO: Remove this ifdef!
-#if 0
-
-if (!ctx)
+    ZmqSocket reporter(gContext, ZMQ_REP);
+    if (!reporter.IsValid())
     {
-        return NULL;
+        handle_error("Failed to create inprocess sock!\n");
     }
 
-    void* sock = zmq_socket(ctx, ZMQ_REP);
-    if (!sock || zmq_bind(sock, gCofnig->GetNodeMgtAddress().c_str()))
+    if (reporter.Bind(gConfig->gCofnig->GetNodeMgtAddress()) == -1)
     {
-        return NULL;
+        handle_error("Failed to bind socket to in-process sock.\n");
     }
 
+    ZmqMessagePtr msg;
     while (true)
     {
-        zmq_msg_recv(&req, dbSock, 0);
-
-        if (!zmq_msg_data(&req) || !zmq_msg_size(&req))
+        msg = reporter.Recv();
+        if (!msg->IsEmpty())
         {
-            PDEBUG ("Invalid data received!");
-            continue;
+
+            // XXX: Here goes worker nodes management code!
+            PDEBUG ("Boss: message received from leaders...\n" );
+            // if (rsp && rsp->get() && !rsp->size())
+            // {
+            //     zmq_msg_send(rsp->get(), dbSock, 0);
+            // }
+            reporter.Send(msg);
         }
-
-        // XXX: Here goes worker nodes management code!
-        PDEBUG ("Boss: message received from WorkerThread" );
-        // if (rsp && rsp->get() && !rsp->size())
-        // {
-        //     zmq_msg_send(rsp->get(), dbSock, 0);
-        // }
     }
-#endif // End of #if 0
 
-return NULL;
+    return NULL;
 }
 
 /**
@@ -70,21 +66,24 @@ int main(int argc, char *argv[])
 
     OUT_STEP("Preparing ZMQContext ... \n");
 
-    ZmqContext ctxt;
-    if (!ctxt.get())
+    gContext.reset(NEW ZmqContext);
+    if (!gContext)
     {
         handle_error("Failed to create ZmqContext!\n");
     }
 
+    OUT_STEP("Preparing sig hanlders ...\n");
+    //TODO: Add signal handling here!
+
     OUT_STEP("Preparing Node Management thread\n");
     pthread_t tid;
-    // if (pthread_create(&tid, WorkerNodeManagementThread, NULL, NULL))
-    // {
-        
-    // }
+    if (pthread_create(&tid, NULL, WorkerNodeManagementThread, NULL))
+    {
+        handle_error("Failed to create Node Management thread\n");
+    }
 
     OUT_STEP("Preparing External sockets\n");
-    void* frontEnd = zmq_socket(ctxt.get(), ZMQ_ROUTER);
+    void* frontEnd = zmq_socket(gContext->get(), ZMQ_ROUTER);
     if (!frontEnd)
     {
         handle_error("Failed to create frontEnd for THServer\n");
@@ -97,7 +96,7 @@ int main(int argc, char *argv[])
     }
 
     OUT_STEP("Preparing backend sockets\n");
-    void* backEnd = zmq_socket(ctxt.get(), ZMQ_ROUTER);
+    void* backEnd = zmq_socket(gContext->get(), ZMQ_ROUTER);
     if (!backEnd)
     {
         handle_error("Failed to create backEnd for THServer");
