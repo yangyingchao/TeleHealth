@@ -6,6 +6,7 @@
 #include "WorkerThread.h"
 #include <unistd.h>
 #include "InternalMessages.h"
+#include <StringUtils.hpp>
 
 ZmqContextPtr gContext;
 ConfigParserPtr gConfig;
@@ -25,6 +26,7 @@ static void SetExtraParameters(WorkerThread* thread, void* param)
 
 static inline ZmqMessagePtr HandleReport(ZmqMessagePtr report)
 {
+    ZmqMessagePtr rsp = report;
     MgtMsg msg;
     if (msg.ParseFromArray(report->data(), report->size()))
     {
@@ -35,8 +37,13 @@ static inline ZmqMessagePtr HandleReport(ZmqMessagePtr report)
         PDEBUG ("Failed to parse message!\n");
     }
 
+    static uint thread_id = 0;
+    string id(msg.message());
+    id += " Your ID: " + StringUtils::Number2String(thread_id++);
+    msg.set_message(id);
+
     // Just return it for now.
-    return report;
+    return ZmqMessage::GetInstance(&msg);
 }
 
 int main(int argc, char *argv[])
@@ -66,7 +73,6 @@ int main(int argc, char *argv[])
     {
         handle_error("Failed to bind socket to in-process sock.\n");
     }
-
 
     OUT_STEP("Creating sock to communicate with boss\n");
     ZmqSocket boss(gContext, ZMQ_REQ);

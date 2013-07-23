@@ -46,24 +46,19 @@ void* ZmqContext::get() const
 
 
 // Implementation of ZmqMessage
-/* See description in header file. */
-ZmqMessage::ZmqMessage()
-        : m_pbMsg(NULL)
+shared_ptr<ZmqMessage>
+ZmqMessage::GetInstance(const google::protobuf::Message* pbMsg)
 {
-    m_pMsg = NEW zmq_msg_t;
-    if (m_pMsg && (zmq_msg_init(m_pMsg) == -1))
+    ZmqMessagePtr msg(NEW ZmqMessage);
+    zmq_msg_t* zmsg = msg ? msg->get() : NULL;
+    if (!msg || !zmsg)
     {
-        Reset();
+        goto err;
     }
-}
 
-/* See description in header file. */
-ZmqMessage::ZmqMessage(const google::protobuf::Message* pMessage)
-        : m_pbMsg(pMessage)
-{
-    if (pMessage)
+    if (pbMsg)
     {
-        int   size = pMessage->ByteSize();
+        int   size = pbMsg->ByteSize();
         void* data = NULL;
         if (size > 0)
         {
@@ -72,8 +67,60 @@ ZmqMessage::ZmqMessage(const google::protobuf::Message* pMessage)
 
         if (data)
         {
+            if (pbMsg->SerializeToArray(data, size) &&
+                (zmq_msg_init_data(zmsg, data, size, ZmqMessageDeleter, NULL) != -1))
+            {
+                goto ret;
+            }
+            free(data);
+        }
+        goto err;
+    }
+    else
+    {
+        if (zmq_msg_init(zmsg) != -1)
+        {
+            goto ret;
+        }
+    }
+
+err:
+    msg.reset();
+ret:
+    return msg;
+}
+
+/* See description in header file. */
+ZmqMessage::ZmqMessage()
+        : m_pMsg(NEW zmq_msg_t)
+{
+}
+
+bool ZmqMessage::ResetFromPBMesssage(const google::protobuf::Message* pbMsg)
+{
+    bool result = false;
+    if (pbMsg)
+    {
+        if (!m_pMsg)
+        {
             m_pMsg = NEW zmq_msg_t;
-            if (m_pMsg && pMessage->SerializeToArray(data, size))
+        }
+        else
+        {
+            (void)zmq_msg_close(m_pMsg);
+        }
+
+        int   size = pbMsg->ByteSize();
+        void* data = NULL;
+        if (size > 0)
+        {
+            data = malloc(size);
+        }
+
+        if (data)
+        {
+
+            if (m_pMsg && pbMsg->SerializeToArray(data, size))
             {
                 if (zmq_msg_init_data(m_pMsg, data, size, ZmqMessageDeleter, NULL) == -1)
                 {
@@ -87,6 +134,7 @@ ZmqMessage::ZmqMessage(const google::protobuf::Message* pMessage)
             }
         }
     }
+    return result;
 }
 
 void ZmqMessage::Reset()
@@ -163,7 +211,7 @@ int ZmqSocket::Send(ZmqMessagePtr msg)
 /* See description in header file. */
 ZmqMessagePtr ZmqSocket::Recv()
 {
-    ZmqMessagePtr msg(new ZmqMessage);
+    ZmqMessagePtr msg = ZmqMessage::GetInstance();
     int ret = zmq_msg_recv(msg->get(), m_sock, 0);
     return msg;
 }
@@ -172,11 +220,6 @@ ZmqMessagePtr ZmqSocket::Recv()
 bool ZmqSocket::IsValid()
 {
     return m_valid;
-}
-
-int ZmqSocket::Bind()
-{
-    return 0;
 }
 
 int ZmqSocket::Connect(const char* addr)

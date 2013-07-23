@@ -3,7 +3,7 @@
 #include "ConfigParser.h"
 
 ZmqContextPtr gContext;
-ConfigParserPtr gCofnig;
+ConfigParserPtr gConfig;
 
 int xStep = 0;
 
@@ -19,7 +19,7 @@ void* WorkerNodeManagementThread(void* data)
         handle_error("Failed to create inprocess sock!\n");
     }
 
-    if (reporter.Bind(gConfig->gCofnig->GetNodeMgtAddress()) == -1)
+    if (reporter.Bind(gConfig->GetNodeMgtAddress()) == -1)
     {
         handle_error("Failed to bind socket to in-process sock.\n");
     }
@@ -58,10 +58,10 @@ int main(int argc, char *argv[])
 {
 
     OUT_STEP("Parse Configuration ...\n");
-    gCofnig = ConfigParser::GetConfigParserWithParams(argc, argv);
-    if (!gCofnig)
+    gConfig = ConfigParser::GetConfigParserWithParams(argc, argv);
+    if (!gConfig)
     {
-        handle_error("Failed to get gCofniguration\n");
+        handle_error("Failed to get gConfiguration\n");
     }
 
     OUT_STEP("Preparing ZMQContext ... \n");
@@ -89,9 +89,9 @@ int main(int argc, char *argv[])
         handle_error("Failed to create frontEnd for THServer\n");
     }
 
-    if (zmq_bind(frontEnd, gCofnig->GetExternalAddress().c_str()))
+    if (zmq_bind(frontEnd, gConfig->GetExternalAddress().c_str()))
     {
-        fprintf(stderr, "ERROR: addr: %s\n", gCofnig->GetExternalAddress().c_str());
+        fprintf(stderr, "ERROR: addr: %s\n", gConfig->GetExternalAddress().c_str());
         handle_error("Failed to bind for external address");
     }
 
@@ -102,9 +102,9 @@ int main(int argc, char *argv[])
         handle_error("Failed to create backEnd for THServer");
     }
 
-    if (zmq_bind(backEnd, gCofnig->GetDealerAddress().c_str()))
+    if (zmq_bind(backEnd, gConfig->GetDealerAddress().c_str()))
     {
-        fprintf(stderr, "ERROR: addr: %s\n", gCofnig->GetDealerAddress().c_str());
+        fprintf(stderr, "ERROR: addr: %s\n", gConfig->GetDealerAddress().c_str());
         handle_error("Failed to bind for external address");
     }
 

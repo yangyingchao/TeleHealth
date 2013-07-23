@@ -92,13 +92,13 @@ void WorkerThread::DoRealWorks()
     mgtMsg->set_cmd(WorkerThreadAvaiable);
     mgtMsg->set_message("Hello, leader, I'm here!");
 
-    ZmqMessagePtr zmsg(new ZmqMessage(mgtMsg));
-    if (!zmsg)
+    ZmqMessagePtr report = ZmqMessage::GetInstance(mgtMsg);
+    if (!report)
     {
         abort();
     }
 
-    int ret = reporter.Send(zmsg);
+    int ret = reporter.Send(report);
     if (ret == -1)
     {
         abort();
@@ -106,14 +106,25 @@ void WorkerThread::DoRealWorks()
 
     // PDEBUG ("sent to reporter, ret: %d\n", ret);
 
-    zmsg = reporter.Recv();
-    if (!zmsg)
+    report = reporter.Recv();
+    if (!report)
     {
         abort();
     }
     else
     {
         // Check response from leader, if allows to work on, then connect to work sock!
+        PDEBUG ("%p: Received response, now continue...\n", this);
+        MgtMsg msg;
+        if (msg.ParseFromArray(report->data(), report->size()))
+        {
+            PDEBUG ("Cmd: %d, Message: %s\n", msg.cmd(), msg.message().c_str());
+        }
+        else
+        {
+            PDEBUG ("Failed to parse message!\n");
+        }
+
     }
 
     // Create work sock.

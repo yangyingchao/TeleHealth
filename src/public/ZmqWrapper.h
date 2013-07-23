@@ -52,25 +52,28 @@ private:
 typedef shared_ptr<ZmqContext> ZmqContextPtr;
 
 /**
- * ZmqMessage -- Wrapper of zmq_msg_t.
+ * ZmqMessage -- Wrapper of zmq_msg_t and google::protocol::Message
  */
 
 class ZmqMessage
 {
 public:
     /**
-     * Default constructor.
+     * @name GetInstance - Create instance of ZmqMessage based on protobuf message.
+     * @param pgMsg -  pointer of protocol buffer message instance.
+     * @return shared_ptr of ZmqMessage.
      */
-    ZmqMessage();
-
-    /**
-     * @name ZmqMessage - constructor using internal THMessage.
-     * @param pMessage -  pointer of message instance.
-     * @return ZmqMessage
-     */
-    ZmqMessage(const google::protobuf::Message* msg);
+    static shared_ptr<ZmqMessage>
+    GetInstance(const google::protobuf::Message* pbMsg=NULL);
 
     virtual ~ZmqMessage();
+
+    /**
+     * @name ResetFromPBMesssage - Reset zmq_msg based on pb message.
+     * @param msg -  message to be seriazlied.
+     * @return bool
+     */
+    bool ResetFromPBMesssage(const google::protobuf::Message* msg);
 
     /**
      * @name get - Return raw pointer of zmq_msg_t;
@@ -90,15 +93,21 @@ public:
      */
     uint32 size() const;
 
+    /**
+     * @name IsEmpty - Check if a ZmqMessage is empty or not.
+     * @return bool
+     */
     bool IsEmpty() const;
  private:
+    ZmqMessage();
+    bool SerializePBMessage(const google::protobuf::Message* pbMsg);
     void Reset();
-    zmq_msg_t* m_pMsg;
-    const google::protobuf::Message* m_pbMsg;
+    zmq_msg_t*     m_pMsg;  /**< pointer of zmq_mst_t, used by ZmqSocket to
+                               send or receive zmq_msg.  */
 };
 
-
 typedef shared_ptr<ZmqMessage> ZmqMessagePtr;
+
 
 class ZmqSocket
 {
@@ -119,17 +128,28 @@ public:
      */
 
     int Send(ZmqMessagePtr msg);
+
     /**
      * @name Recv - Receives a msg.
      * @return ZmqMessagePtr
      */
     ZmqMessagePtr Recv();
 
-    int Bind();
-    int Connect(const char* addr);
-    int Connect(const string& addr);
+    /**
+     * @name Bind - Bind a to address.
+     * @param addr - Character address to be connected.
+     * @return 0 if succeeded.
+     */
     int Bind(const char* addr);
     int Bind(const string& addr);
+
+    /**
+     * @name Connect - Connects to  an address.
+     * @param addr - Character address to be connected.
+     * @return 0 if succeeded.
+     */
+    int Connect(const char* addr);
+    int Connect(const string& addr);
     void* get();
 private:
     void* m_sock;

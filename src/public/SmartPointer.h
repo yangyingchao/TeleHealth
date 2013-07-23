@@ -6,6 +6,7 @@
 using namespace std;
 using namespace tr1;
 
+// No mem check is performed at present, should be addressed.
 #define NEW       new (nothrow)
 
 
