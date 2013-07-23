@@ -8,16 +8,6 @@
 
 #include <iostream>
 
-static inline THMessagePtr Zmsg2Tmsg(ZmqMessagePtr msg)
-{
-    return THMessagePtr();
-}
-
-static inline ZmqMessagePtr Tmsg2Zmsg(THMessagePtr msg)
-{
-    return ZmqMessagePtr();
-}
-
 // Implementation of WorkerThread
 
 /* See description in header file. */
@@ -166,13 +156,13 @@ void WorkerThread::DoRealWorks()
         if (items[1].revents & ZMQ_POLLIN)
         {
             msg = workSock.Recv();
-            if (!msg || !msg->data() || !msg->size())
+            if (!msg || msg->IsEmpty())
             {
                 PDEBUG ("Invalid data received!");
                 continue;
             }
 
-            ZmqMessagePtr rsp = Tmsg2Zmsg(HandleRequest(Zmsg2Tmsg(msg)));
+            ZmqMessagePtr rsp = m_messageProcessor.ProcessMessage(msg);
             PDEBUG ("Worker: message received from WorkerThread" );
             if (rsp && rsp->get() && !rsp->size())
             {
@@ -182,46 +172,6 @@ void WorkerThread::DoRealWorks()
     }
 }
 
-
-/* See description in header file. */
-THMessagePtr WorkerThread::HandleRequest(const THMessagePtr& request)
-{
-    THMessagePtr rsp;
-    MessageHeaderPtr header = request ? request->GetMessageHeader() : MessageHeaderPtr();
-
-    // TODO: Finish error handling here.
-    if (!header)
-    {
-        //
-    }
-
-    if (header->has_version())
-    {
-        //TODO: Add version checking...
-        cout << "**********\t\tReceived data: "
-             << header->version().c_str() << endl;
-    }
-
-    if (!m_pMessageProcessor)
-    {
-        m_pMessageProcessor = MessageProcessor::GetInstance(header);
-    }
-
-    PDEBUG ("Processor: %p\n", m_pMessageProcessor);
-
-    if (m_pMessageProcessor)
-    {
-        rsp = m_pMessageProcessor->ProcessMessage(request);
-    }
-    else // TODO: reply error!
-    {
-        rsp.reset(new THMessage);
-        rsp->SetMessageHeader(header);
-        rsp->SetMessageBody(header);
-    }
-
-    return rsp;
-}
 
 /* See description in header file. */
 void WorkerThread::SetThreadPool(ThreadPool <WorkerThread>* pool)

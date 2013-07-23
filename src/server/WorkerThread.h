@@ -27,10 +27,9 @@ protected:
 private:
     static void* StaticThreadFunction(void* arg);
     void DoRealWorks();
-    THMessagePtr HandleRequest(const THMessagePtr& reqest);
 
     ThreadPool<WorkerThread>* m_pPool;
-    MessageProcessor* m_pMessageProcessor;
+    MessageProcessor m_messageProcessor;
     ZmqContextPtr m_pContext;
     shared_ptr<ConfigParser> m_config;
 };

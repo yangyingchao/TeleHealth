@@ -22,12 +22,13 @@ enum ErrorCode {
     EC_DB_ERR      = 104;
 }
 
-message MessageHeader {
+message THMessage {
     required Command cmd        = 1 [default = InvalidCmd];
     required uint32  length     = 2;    // Length of data (not header.)
     required string  version    = 3;
     required string  session_id = 4;    // Set it to empty for first client req.
-    optional uint32  extra_info = 5;
+    optional uint32  data_length = 0x11;
+    optional bytes   data = 0x12;
 }
 
 

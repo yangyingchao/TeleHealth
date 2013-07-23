@@ -3,6 +3,7 @@
 
 #include <MessageBase.h>
 #include "AccountManager.h"
+#include <ZmqWrapper.h>
 
 class MessageProcessor;
 typedef shared_ptr<MessageProcessor> MessageProcessorPtr;
@@ -10,7 +11,7 @@ typedef shared_ptr<Account> AccountPtr;
 
 class MsgPrsPrivate;
 
-typedef THMessagePtr (*CommandHandler)(THMessagePtr, MsgPrsPrivate& privData);
+typedef THMessagePtr (*CommandHandler)(const THMessage&, MsgPrsPrivate& privData);
 typedef map<int, CommandHandler> HandlerMap;
 
 class MsgPrsPrivate
@@ -33,14 +34,13 @@ public:
 class MessageProcessor
 {
 public:
-    static MessageProcessor* GetInstance(MessageHeaderPtr header);
     static bool RegisterCommandHandler(Command cmd, CommandHandler handler);
     virtual ~MessageProcessor();
     MessageProcessor();
-    THMessagePtr ProcessMessage(THMessagePtr msg);
+    ZmqMessagePtr ProcessMessage(const ZmqMessagePtr& msg);
 private:
     static HandlerMap m_commandHandlers;
-    THMessagePtr GenericErrorResponse(MessageHeaderPtr header, ErrorCode err);
+    THMessagePtr GenericErrorResponse(const THMessage& tmsg, ErrorCode err);
 
     MsgPrsPrivate m_privateData; //Private data of this processor, should be bind to one connection.
 };

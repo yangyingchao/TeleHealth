@@ -158,4 +158,9 @@ private:
 
 typedef shared_ptr<ZmqSocket> ZmqSocketPtr;
 
+template <typename T>
+bool ZmqMsg2Message(const ZmqMessagePtr& zmsg, T& msg)
+{
+    return msg.ParseFromArray(zmsg->data(), zmsg->size());
+}
 #endif /* _ZMQWRAPPER_H_ */
