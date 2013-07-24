@@ -96,7 +96,8 @@ libthserver_la_LIBADD =
 am_libthserver_la_OBJECTS = InternalMessages.pb.lo InternalMessages.lo
 libthserver_la_OBJECTS = $(am_libthserver_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
-am_DbServer_OBJECTS = DBServer.$(OBJEXT)
+am_DbServer_OBJECTS = DBServer.$(OBJEXT) KVDB.$(OBJEXT) \
+	KVDBImplLevelDB.$(OBJEXT)
 DbServer_OBJECTS = $(am_DbServer_OBJECTS)
 DbServer_DEPENDENCIES =
 am_ServerNode_OBJECTS = WorkerNode.$(OBJEXT) \
@@ -303,7 +304,7 @@ SUBDIRS = InternalMessages/ unittest/
 EXTRA_DIST = Project.ede
 lib_LTLIBRARIES = libthserver.la
 THServer_SOURCES = THServer.cpp
-DbServer_SOURCES = DBServer.cpp
+DbServer_SOURCES = DBServer.cpp KVDB.cpp KVDBImplLevelDB.cpp
 ServerNode_SOURCES = WorkerNode.cpp MessageProcessor.cpp WorkerThread.cpp
 libthserver_la_SOURCES = InternalMessages.pb.cc InternalMessages.cpp
 THServer_LDADD = 
@@ -444,6 +445,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DBServer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InternalMessages.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InternalMessages.pb.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KVDB.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KVDBImplLevelDB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MessageProcessor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/THServer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorkerNode.Po@am__quote@

@@ -57,7 +57,7 @@ ZmqMessagePtr MessageProcessor::ProcessMessage(const ZmqMessagePtr& msg)
     PDEBUG ("enter\n");
     ErrorCode err = EC_UNEXPECTED;
     THMessage tmsg;
-    if (ZmqMsg2Message(msg, tmsg))
+    if (!ZmqMsg2Message(msg, tmsg))
     {
         //FIXME
         // return GenericErrorResponse(msg, err);

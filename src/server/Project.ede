@@ -13,7 +13,8 @@
    (ede-proj-target-makefile-program "DbServer"
     :name "DbServer"
     :path ""
-    :source '("DBServer.cpp")
+    :source '("DBServer.cpp" "KVDB.cpp" "KVDBImplLevelDB.cpp")
+    :auxsource '("KVDB.h" "KVDBImplLevelDB.h")
     :configuration-variables 'nil
     )
    (ede-proj-target-makefile-program "ServerNode"

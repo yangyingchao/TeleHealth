@@ -106,7 +106,7 @@ void WorkerThread::DoRealWorks()
         // Check response from leader, if allows to work on, then connect to work sock!
         PDEBUG ("%p: Received response, now continue...\n", this);
         MgtMsg msg;
-        if (msg.ParseFromArray(report->data(), report->size()))
+        if (ZmqMsg2Message(report, msg))
         {
             PDEBUG ("Cmd: %d, Message: %s\n", msg.cmd(), msg.message().c_str());
         }

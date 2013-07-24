@@ -1,9 +1,11 @@
 #include <ZmqWrapper.h>
 #include <LogUtils.h>
 #include "ConfigParser.h"
+#include "KVDB.h"
 
 int xStep = 0;
 
+static   KVDB* gAccountDB; // = KVDB::GetInstance(KVDB::KVDB_Fake, path);
 // TODO: Remove this ifdef!
 ZmqMessagePtr ProcessDBRequest(const ZmqMessagePtr& req)
 {
@@ -13,13 +15,18 @@ ZmqMessagePtr ProcessDBRequest(const ZmqMessagePtr& req)
 
 int main(int argc, char *argv[])
 {
-
     OUT_STEP("Parse Configuration ...\n");
     ConfigParserPtr config = ConfigParser::GetConfigParserWithParams(argc, argv);
     if (!config)
     {
         handle_error("Failed to get configuration\n");
     }
+
+    // Initialize account database.
+    OUT_STEP("Preparing AccountManager Database\n");
+    // TODO:
+
+    // TODO: initialize other databases ....
 
     OUT_STEP("Preparing ZMQContext ... \n");
     ZmqContextPtr ctxt(NEW ZmqContext);

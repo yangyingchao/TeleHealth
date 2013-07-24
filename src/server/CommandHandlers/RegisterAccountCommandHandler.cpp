@@ -3,7 +3,7 @@
 
 // Client App should ensure required parts of Account is filled!
 
-THMessagePtr zzz_RegisterAccountCommandHandler(THMessagePtr msg, MsgPrsPrivate& privData)
+THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg, MsgPrsPrivate& privData)
 {
     printf("Called!\n");
 
