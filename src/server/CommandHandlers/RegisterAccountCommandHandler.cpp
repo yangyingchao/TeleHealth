@@ -1,6 +1,8 @@
 // ZZZ_TARGET_CMD: RegisterUserReq
-
-
+#ifdef TB_SYM_CHECK
+#include <MessageBase.h>
+#include <MessageProcessor.h>
+#endif
 // Client App should ensure required parts of Account is filled!
 
 THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg, MsgPrsPrivate& privData)
@@ -9,22 +11,18 @@ THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg, MsgPrsPriva
 
     string&  errMsg(privData.m_errMsg);
     AM_Error err = EC_OK;
-    MessageHeaderPtr header = msg->GetMessageHeader();
     do
     {
-
-        if (privData.m_account)                           // private data is not empty
+        const char* data = NULL;
+        if (!msg.has_data() || !(data = msg.data().c_str()))
         {
-            errMsg = "Data corrupt!";
             err = EC_INVALID_ARG;
             break;
         }
 
         // Parse it into a Account class.
-        DataBlobPtr blob    = msg->GetBodyBlob();
         Account*    account = new Account;
-        privData.m_account.reset(account);
-        if (!account->ParseFromArray(blob->GetData(), blob->GetDataSize()))
+        if (!account->ParseFromArray(data, msg.data().size()))
         {
             errMsg = "Failed to parse message.";
             err = EC_INVALID_ARG;
@@ -43,26 +41,28 @@ THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg, MsgPrsPriva
 
     } while (0);
 
+    THMessagePtr rsp(NEW THMessage);
     // Reuse and update header.
-    header->set_cmd(RegisterUserRsp);
-    header->set_length(0);
-    header->set_session_id(privData.m_sessionId);
-    header->set_extra_info((uint32)err); // Use this extra_info as error code.
+    rsp->set_cmd(RegisterUserRsp);
+    rsp->set_length(0);
+    rsp->set_session_id(privData.m_sessionId);
 
-    AccountRegisterResponse* body = NEW AccountRegisterResponse;
-
-    if (!err && body)
+    AccountRegisterResponse body;
+    body.set_err(err);
+    if (!err)
     {
-        body->set_err(err);
         // Generate a ServiceLists and set it as body of message.
-        ServiceLists* srvList = body->mutable_srv_list();
+        ServiceLists* srvList = body.mutable_srv_list();
         if (srvList)
         {
             // Add services provided to this account.
             srvList->add_types(VST_PhysicalInfo);
             srvList->set_tips("Welcome, you!");
         }
-        msg->SetMessageBody(MessagePtr(body));
     }
-    return  msg;
+
+    string dataOut;
+    (void) body.SerializeToString(&dataOut);
+    rsp->set_data(dataOut);
+    return  rsp;
 }

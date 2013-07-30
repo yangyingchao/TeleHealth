@@ -61,7 +61,7 @@ void WorkerThread::DoRealWorks()
 
     // Here we are using raw ProtocolBuffer (PB) message, maybe need to wrap it someday.
 
-    sleep(5);
+    sleep(2);
     // Create reporter sock.
     ZmqSocket reporter(m_pContext, ZMQ_REQ);
     if (!reporter.IsValid())
@@ -146,10 +146,10 @@ void WorkerThread::DoRealWorks()
             break;
         }
 
-        // Boss assigned jobs ...
+        // Leader assigned jobs ...
         if (items[0].revents & ZMQ_POLLIN)
         {
-
+            //TODO: fill this.
         }
 
         // Workers sent report to leader ...

@@ -64,6 +64,7 @@ ZmqMessagePtr MessageProcessor::ProcessMessage(const ZmqMessagePtr& msg)
     }
 
     Command cmd = tmsg.cmd();
+    //TODO: Add checks of length version, session_id.
     THMessagePtr rsp;
     if (IsRequestCommand(cmd))
     {
