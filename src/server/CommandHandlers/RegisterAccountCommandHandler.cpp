@@ -2,67 +2,67 @@
 #ifdef TB_SYM_CHECK
 #include <MessageBase.h>
 #include <MessageProcessor.h>
+#include <ConfigParser.h>
 #endif
 // Client App should ensure required parts of Account is filled!
 
-THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg, MsgPrsPrivate& privData)
+THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg,
+                                               MsgPrivate& priv)
 {
     printf("Called!\n");
 
-    string&  errMsg(privData.m_errMsg);
-    AM_Error err = EC_OK;
-    do
+    string        errMsg;
+    ZmqMessagePtr zmsg;
+    THMessagePtr  rsp;
+    ErrorCode     err  = EC_OK;
+    const char*   data = NULL;
+    int           ret  = 0;
+
+    if (!msg.has_data() || !(data = msg.data().c_str()))
     {
-        const char* data = NULL;
-        if (!msg.has_data() || !(data = msg.data().c_str()))
-        {
-            err = EC_INVALID_ARG;
-            break;
-        }
+        err = EC_INVALID_ARG;
+        goto out;
+    }
 
-        // Parse it into a Account class.
-        Account*    account = new Account;
-        if (!account->ParseFromArray(data, msg.data().size()))
-        {
-            errMsg = "Failed to parse message.";
-            err = EC_INVALID_ARG;
-            break;
-        }
-
-        AM_Error err = RegisterAccount(account);
-        if (err)
-        {
-            break;
-        }
-
-        // Update private data.
-        privData.m_status = account->status();
-        privData.m_sessionId = "FAKE_SEESION_ID"; // XXX:
-
-    } while (0);
-
-    THMessagePtr rsp(NEW THMessage);
-    // Reuse and update header.
-    rsp->set_cmd(RegisterUserRsp);
-    rsp->set_length(0);
-    rsp->set_session_id(privData.m_sessionId);
-
-    AccountRegisterResponse body;
-    body.set_err(err);
-    if (!err)
+    if (!priv.m_dbSock)
     {
-        // Generate a ServiceLists and set it as body of message.
-        ServiceLists* srvList = body.mutable_srv_list();
-        if (srvList)
+        priv.m_dbSock.reset(NEW ZmqSocket(priv.m_pContext, ZMQ_REQ));
+        if (!priv.m_dbSock)
         {
-            // Add services provided to this account.
-            srvList->add_types(VST_PhysicalInfo);
-            srvList->set_tips("Welcome, you!");
+            err = EC_NOMEM;
+            goto out;
+        }
+
+        if (priv.m_dbSock->Connect(priv.m_pConfig->GetDBAddress()))
+        {
+            err = EC_SRV_INTERNAL;
+            goto out;
         }
     }
 
+    zmsg = ZmqMessage::GetInstance(&msg);
+    ret = priv.m_dbSock->Send(zmsg);
+    if (ret)
+    {
+        // Forward request to db thread.
+        zmsg = priv.m_dbSock->Recv();
+    }
+out:
+    rsp.reset(NEW THMessage);
+    if (zmsg && rsp && ZmqMsg2Message<THMessage>(zmsg, *rsp))
+    {
+        return rsp;
+    }
+
+    // Reuse and update header.
+    rsp->set_cmd(RegisterUserRsp);
+    rsp->set_session_id("");
+    // version should be set outside.
+    AccountRegisterResponse body;
+    body.set_err(err);
     string dataOut;
     (void) body.SerializeToString(&dataOut);
     rsp->set_data(dataOut);
+    rsp->set_length(body.ByteSize());
     return  rsp;
 }

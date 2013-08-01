@@ -20,8 +20,8 @@
    (ede-proj-target-makefile-program "ServerNode"
     :name "ServerNode"
     :path ""
-    :source '("WorkerNode.cpp" "MessageProcessor.cpp" "WorkerThread.cpp")
-    :auxsource '("MessageProcessor.h" "WorkerThread.h" "ThreadPool.h" "Pool.h")
+    :source '("WorkerNode.cpp" "MessageProcessor.cpp" "WorkerThread.cpp" "AccountManager.cpp")
+    :auxsource '("MessageProcessor.h" "WorkerThread.h" "ThreadPool.h" "Pool.h" "CommandHandlerAggregator.h" "AccountManager.h")
     :configuration-variables 'nil
     :ldflags '("-lthserver")
     )

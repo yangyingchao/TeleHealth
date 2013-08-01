@@ -182,10 +182,12 @@ void WorkerThread::SetThreadPool(ThreadPool <WorkerThread>* pool)
 /* See description in header file. */
 void WorkerThread::SetContext(ZmqContextPtr context)
 {
-    m_pContext = context;
+    m_pContext                              = context;
+    m_messageProcessor.m_private.m_pContext = context;
 }
 
 void WorkerThread::SetConfig(shared_ptr<ConfigParser> config)
 {
-    m_config = config;
+    m_config                               = config;
+    m_messageProcessor.m_private.m_pConfig = config;
 }

@@ -9,40 +9,39 @@ class MessageProcessor;
 typedef shared_ptr<MessageProcessor> MessageProcessorPtr;
 typedef shared_ptr<Account> AccountPtr;
 
-class MsgPrsPrivate;
+class MsgPrivate;
 
-typedef THMessagePtr (*CommandHandler)(const THMessage&, MsgPrsPrivate& privData);
+typedef THMessagePtr (*CommandHandler)(const THMessage&,
+                                       MsgPrivate& privData);
 typedef map<int, CommandHandler> HandlerMap;
 
-class MsgPrsPrivate
+class ConfigParser;
+
+class MsgPrivate
 {
 public:
-    MsgPrsPrivate();
-    virtual ~MsgPrsPrivate();
+    MsgPrivate(){}
+    virtual ~MsgPrivate(){}
+    ZmqContextPtr m_pContext;
+    shared_ptr<ConfigParser> m_pConfig;
 
-    void Reset();
-
-    string       m_errMsg;
-    AccountPtr   m_account;
-
-    AccountStatus m_status;
-
-    string m_sessionId;
+    ZmqSocketPtr m_dbSock;
 };
 
-
+class WorkerThread;
 class MessageProcessor
 {
 public:
+    friend class WorkerThread;
     static bool RegisterCommandHandler(Command cmd, CommandHandler handler);
-    virtual ~MessageProcessor();
     MessageProcessor();
+    virtual ~MessageProcessor();
     ZmqMessagePtr ProcessMessage(const ZmqMessagePtr& msg);
 private:
     static HandlerMap m_commandHandlers;
     THMessagePtr GenericErrorResponse(const THMessage& tmsg, ErrorCode err);
 
-    MsgPrsPrivate m_privateData; //Private data of this processor, should be bind to one connection.
+    MsgPrivate m_privateData; //Private data of this processor, should be bind to one connection.
 };
 
 

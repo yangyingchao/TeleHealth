@@ -20,6 +20,9 @@ enum ErrorCode {
     EC_NOMEM       = 102;
     EC_BUSY        = 103;
     EC_DB_ERR      = 104;
+
+    EC_SRV_MISCONFIG      = 200;
+    EC_SRV_INTERNAL = 201;
 }
 
 message THMessage {

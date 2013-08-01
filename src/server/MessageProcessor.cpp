@@ -15,10 +15,6 @@ MessageProcessor::~MessageProcessor()
     //XXX: Implement this!
 }
 
-/* See description in header file. */
-MessageProcessor::MessageProcessor()
-{
-}
 
 /* See description in header file. */
 bool MessageProcessor::RegisterCommandHandler(Command cmd, CommandHandler handler)
@@ -32,24 +28,6 @@ bool MessageProcessor::RegisterCommandHandler(Command cmd, CommandHandler handle
 }
 
 // Implementation of Private data of MessageProcessor.
-/* See description in header file. */
-MsgPrsPrivate::MsgPrsPrivate()
-{
-}
-
-/* See description in header file. */
-MsgPrsPrivate::~MsgPrsPrivate()
-{
-    Reset();
-}
-
-/* See description in header file. */
-void MsgPrsPrivate::Reset()
-{
-    m_errMsg.clear();
-    m_account.reset();
-    m_sessionId.clear();
-}
 
 /* See description in header file. */
 ZmqMessagePtr MessageProcessor::ProcessMessage(const ZmqMessagePtr& msg)
@@ -68,7 +46,8 @@ ZmqMessagePtr MessageProcessor::ProcessMessage(const ZmqMessagePtr& msg)
     THMessagePtr rsp;
     if (IsRequestCommand(cmd))
     {
-        HandlerMap::iterator iter = MessageProcessor::m_commandHandlers.find(cmd);
+        HandlerMap::iterator iter =
+                MessageProcessor::m_commandHandlers.find(cmd);
         if (iter != MessageProcessor::m_commandHandlers.end() && iter->second)
         {
             rsp = iter->second(tmsg, m_privateData);
@@ -109,4 +88,13 @@ THMessagePtr MessageProcessor::GenericErrorResponse(const THMessage& tmsg, Error
     // rsp->SetMessageHeader(newHeader);
 
     return  rsp;
+}
+
+/* See description in header file. */
+MessageProcessor::MessageProcessor(ZmqContextPtr pContext,
+                                   shared_ptr <ConfigParser> pConfig)
+        : m_pContext(pContext),
+          m_pConfig(pConfig),
+          m_privateData(pContext)
+{
 }
