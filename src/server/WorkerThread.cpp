@@ -60,7 +60,15 @@ void WorkerThread::DoRealWorks()
     }
 
     // Here we are using raw ProtocolBuffer (PB) message, maybe need to wrap it someday.
+<<<<<<< variant A
     sleep(1);
+>>>>>>> variant B
+
+    sleep(2);
+####### Ancestor
+
+    sleep(5);
+======= end
     // Create reporter sock.
     ZmqSocket reporter(m_pContext, ZMQ_REQ);
     if (!reporter.IsValid())
@@ -143,10 +151,10 @@ void WorkerThread::DoRealWorks()
             break;
         }
 
-        // Boss assigned jobs ...
+        // Leader assigned jobs ...
         if (items[0].revents & ZMQ_POLLIN)
         {
-
+            //TODO: fill this.
         }
 
         // Workers sent report to leader ...
@@ -179,10 +187,12 @@ void WorkerThread::SetThreadPool(ThreadPool <WorkerThread>* pool)
 /* See description in header file. */
 void WorkerThread::SetContext(ZmqContextPtr context)
 {
-    m_pContext = context;
+    m_pContext                              = context;
+    m_messageProcessor.m_private.m_pContext = context;
 }
 
 void WorkerThread::SetConfig(shared_ptr<ConfigParser> config)
 {
-    m_config = config;
+    m_config                               = config;
+    m_messageProcessor.m_private.m_pConfig = config;
 }

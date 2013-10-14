@@ -1,6 +1,9 @@
 // ZZZ_TARGET_CMD: RegisterUserReq
-
-
+#ifdef TB_SYM_CHECK
+#include <MessageBase.h>
+#include <MessageProcessor.h>
+#include <ConfigParser.h>
+#endif
 // Client App should ensure required parts of Account is filled!
 
 THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg,
@@ -15,36 +18,39 @@ THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg,
     MessageHeaderPtr header = msg->GetMessageHeader();
     do
     {
+        err = EC_INVALID_ARG;
+        goto out;
+    }
 
-        if (privData.m_account)                           // private data is not empty
+    if (!priv.m_dbSock)
+    {
+        priv.m_dbSock.reset(NEW ZmqSocket(priv.m_pContext, ZMQ_REQ));
+        if (!priv.m_dbSock)
         {
-            errMsg = "Data corrupt!";
-            err = EC_INVALID_ARG;
-            break;
+            err = EC_NOMEM;
+            goto out;
         }
 
-        // Parse it into a Account class.
-        DataBlobPtr blob    = msg->GetBodyBlob();
-        Account*    account = new Account;
-        privData.m_account.reset(account);
-        if (!account->ParseFromArray(blob->GetData(), blob->GetDataSize()))
+        if (priv.m_dbSock->Connect(priv.m_pConfig->GetDBAddress()))
         {
-            errMsg = "Failed to parse message.";
-            err = EC_INVALID_ARG;
-            break;
+            err = EC_SRV_INTERNAL;
+            goto out;
         }
+    }
 
-        AM_Error err = RegisterAccount(account);
-        if (err)
-        {
-            break;
-        }
-
-        // Update private data.
-        privData.m_status = account->status();
-        privData.m_sessionId = "FAKE_SEESION_ID"; // XXX:
-
-    } while (0);
+    zmsg = ZmqMessage::GetInstance(&msg);
+    ret = priv.m_dbSock->Send(zmsg);
+    if (ret)
+    {
+        // Forward request to db thread.
+        zmsg = priv.m_dbSock->Recv();
+    }
+out:
+    rsp.reset(NEW THMessage);
+    if (zmsg && rsp && ZmqMsg2Message<THMessage>(zmsg, *rsp))
+    {
+        return rsp;
+    }
 
     // Reuse and update header.
     header->set_cmd(RegisterUserRsp);

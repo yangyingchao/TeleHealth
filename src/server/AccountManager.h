@@ -1,5 +1,7 @@
 #ifndef _ACCOUNTMANAGER_H_
 #define _ACCOUNTMANAGER_H_
+// TODO: Remove this ifdef!
+#if 0
 
 #include "MessageBase.h"
 
@@ -11,12 +13,11 @@ class Account;
 
 
 typedef ErrorCode   AM_Error;
+class MsgPrivate;
 
-bool InitializeAccountManager(const char* path);
+AM_Error RegisterAccount(Account* account, MsgPrivate& priv);
 
-void DestroyAccountManager();
+AM_Error AccountLogoff(Account* account, MsgPrivate& priv);
+#endif // End of #if 0
 
-AM_Error RegisterAccount(Account* account);
-
-AM_Error AccountLogoff(Account* account);
 #endif /* _ACCOUNTMANAGER_H_ */
