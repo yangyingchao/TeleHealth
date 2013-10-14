@@ -2,7 +2,11 @@
 #include "Pool.h"
 #include <LogUtils.h>
 
-HandlerMap MessageProcessor::m_commandHandlers = HandlerMap();
+typedef map<int, CommandHandler> HandlerMap;
+static HandlerMap g_commandHandlers;
+
+// The idea here is not share any writable data to multiple thread.
+// The only one shared between each thread is g_commandHandlers which is read-only.
 
 static inline bool IsRequestCommand(Command cmd)
 {
@@ -10,49 +14,37 @@ static inline bool IsRequestCommand(Command cmd)
 }
 
 /* See description in header file. */
-MessageProcessor::~MessageProcessor()
-{
-    //XXX: Implement this!
-}
-
-/* See description in header file. */
-MessageProcessor::MessageProcessor()
-{
-}
-
-/* See description in header file. */
-bool MessageProcessor::RegisterCommandHandler(Command cmd, CommandHandler handler)
+bool RegisterCommandHandler(Command cmd, CommandHandler handler)
 {
     bool result = false;
     if (IsRequestCommand(cmd) && handler)
     {
-        result = m_commandHandlers.insert(make_pair((int)cmd, handler)).second;
+        result = g_commandHandlers.insert(make_pair((int)cmd, handler)).second;
     }
     return result;
 }
 
-// Implementation of Private data of MessageProcessor.
+
 /* See description in header file. */
-MsgPrsPrivate::MsgPrsPrivate()
+static inline
+THMessagePtr GenericErrorResponse(const THMessage& tmsg, ErrorCode err)
 {
+    THMessagePtr rsp;
+    // MessageHeaderPtr newHeader(NEW MessageHeader);
+    // newHeader->set_cmd(header->cmd());
+    // newHeader->set_version(header->version());
+    // newHeader->set_session_id(header->session_id());
+    // newHeader->set_length(0);
+    // newHeader->set_extra_info(err);
+    // rsp->SetMessageHeader(newHeader);
+
+    return  rsp;
 }
 
 /* See description in header file. */
-MsgPrsPrivate::~MsgPrsPrivate()
-{
-    Reset();
-}
-
-/* See description in header file. */
-void MsgPrsPrivate::Reset()
-{
-    m_errMsg.clear();
-    m_account.reset();
-    m_sessionId.clear();
-}
-
-/* See description in header file. */
-ZmqMessagePtr MessageProcessor::ProcessMessage(const ZmqMessagePtr& msg)
+ZmqMessagePtr ProcessMessage(const ZmqMessagePtr& msg,
+                             const ZmqContextPtr& gContext,
+                             const ConfigParserPtr& gConfig)
 {
     PDEBUG ("enter\n");
     ErrorCode err = EC_UNEXPECTED;
@@ -67,10 +59,10 @@ ZmqMessagePtr MessageProcessor::ProcessMessage(const ZmqMessagePtr& msg)
     THMessagePtr rsp;
     if (IsRequestCommand(cmd))
     {
-        HandlerMap::iterator iter = MessageProcessor::m_commandHandlers.find(cmd);
-        if (iter != MessageProcessor::m_commandHandlers.end() && iter->second)
+        HandlerMap::iterator iter = g_commandHandlers.find(cmd);
+        if (iter != g_commandHandlers.end() && iter->second)
         {
-            rsp = iter->second(tmsg, m_privateData);
+            rsp = iter->second(tmsg, gContext, gConfig);
             err = EC_OK;
         }
         else
@@ -93,19 +85,4 @@ ZmqMessagePtr MessageProcessor::ProcessMessage(const ZmqMessagePtr& msg)
     }
 
     return ZmqMessage::GetInstance(rsp.get());
-}
-
-/* See description in header file. */
-THMessagePtr MessageProcessor::GenericErrorResponse(const THMessage& tmsg, ErrorCode err)
-{
-    THMessagePtr rsp;
-    // MessageHeaderPtr newHeader(NEW MessageHeader);
-    // newHeader->set_cmd(header->cmd());
-    // newHeader->set_version(header->version());
-    // newHeader->set_session_id(header->session_id());
-    // newHeader->set_length(0);
-    // newHeader->set_extra_info(err);
-    // rsp->SetMessageHeader(newHeader);
-
-    return  rsp;
 }

@@ -1,6 +1,8 @@
 #include <ZmqWrapper.h>
 #include <LogUtils.h>
 #include "ConfigParser.h"
+#include <unistd.h>
+#include <time.h>
 
 ZmqContextPtr gContext;
 ConfigParserPtr gConfig;
@@ -81,6 +83,9 @@ int main(int argc, char *argv[])
     {
         handle_error("Failed to create Node Management thread\n");
     }
+
+    // Sleep 2 seconds to wait for Node Mgt thread done.
+    sleep(2);
 
     OUT_STEP("Preparing External sockets\n");
     void* frontEnd = zmq_socket(gContext->get(), ZMQ_ROUTER);

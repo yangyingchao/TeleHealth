@@ -3,10 +3,13 @@
 
 // Client App should ensure required parts of Account is filled!
 
-THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg, MsgPrsPrivate& privData)
+THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg,
+                                               const ZmqContextPtr& gContext,
+                                               const ConfigParserPtr& gConfig)
 {
     printf("Called!\n");
-
+    // TODO: Remove this ifdef!
+#if 0
     string&  errMsg(privData.m_errMsg);
     AM_Error err = EC_OK;
     MessageHeaderPtr header = msg->GetMessageHeader();
@@ -64,5 +67,7 @@ THMessagePtr zzz_RegisterAccountCommandHandler(const THMessage& msg, MsgPrsPriva
         }
         msg->SetMessageBody(MessagePtr(body));
     }
-    return  msg;
+#endif // End of #if 0
+
+    return  THMessagePtr();
 }

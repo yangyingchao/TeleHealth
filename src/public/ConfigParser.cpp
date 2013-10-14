@@ -136,8 +136,7 @@ const string& ConfigParser::GetDealerAddress() const
 /* See description in header file. */
 uint32 ConfigParser::GetThreadsPerNode() const
 {
-    // return 64;
-    return 2;
+    return 64;
 }
 
 /* See description in header file. */
@@ -169,7 +168,7 @@ string ConfigSection::GetConfig(const string& key) const
 }
 
 // This should really be a internal addr.
-const string tmpNodeMgtAddr("tcp://localhost:5559");
+const string tmpNodeMgtAddr("tcp://127.0.0.1:5560");
 /* See description in header file. */
 const string& ConfigParser::GetNodeMgtAddress() const
 {

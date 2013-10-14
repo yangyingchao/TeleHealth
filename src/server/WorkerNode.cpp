@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "InternalMessages.h"
 #include <StringUtils.hpp>
+#include "CommandHandlerAggregator.h"
 
 ZmqContextPtr gContext;
 ConfigParserPtr gConfig;
@@ -14,6 +15,13 @@ ConfigParserPtr gConfig;
 int xStep = 0;
 
 static const char* NODE_INPROC_ADDR = "inproc://worker_node.inproc";
+
+/**
+ * @name SetExtraParameters - Callback function used by ThreadPool to set up params.
+ * @param thread -  worker thread object.
+ * @param param - parameters.
+ * @return void
+ */
 static void SetExtraParameters(WorkerThread* thread, void* param)
 {
     if (thread)
@@ -55,6 +63,12 @@ int main(int argc, char *argv[])
         handle_error("Failed to get configuration\n");
     }
 
+    OUT_STEP("Initializing Command Handlers\n");
+    if (!InitCommandHandlers())
+    {
+        handle_error("Failed to initialize command handlers\n");
+    }
+
     OUT_STEP("Preparing ZMQContext ... \n");
     gContext.reset(new ZmqContext);
     if (!gContext || !gContext->get())
@@ -82,11 +96,15 @@ int main(int argc, char *argv[])
     }
 
     sleep(2);
+
+    // Real works are handle by workers, and this `leader` just waiting instructions
+    // from boss.
     OUT_STEP("Creating worker threads");
 
     ThreadPool<WorkerThread> threadPool(gConfig->GetThreadsPerNode(),
                                         SetExtraParameters, NULL);
 
+    // Now waiting from boss.
     OUT_STEP("Waiting for commands or reports....\n");
     // Select between boss and leader..
     while (true)

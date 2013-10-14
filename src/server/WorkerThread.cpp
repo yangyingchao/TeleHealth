@@ -60,8 +60,7 @@ void WorkerThread::DoRealWorks()
     }
 
     // Here we are using raw ProtocolBuffer (PB) message, maybe need to wrap it someday.
-
-    sleep(5);
+    sleep(1);
     // Create reporter sock.
     ZmqSocket reporter(m_pContext, ZMQ_REQ);
     if (!reporter.IsValid())
@@ -114,11 +113,9 @@ void WorkerThread::DoRealWorks()
         {
             PDEBUG ("Failed to parse message!\n");
         }
-
     }
 
     // Create work sock.
-
     ZmqSocket workSock(m_pContext, ZMQ_REP);
     if (!workSock.IsValid())
     {
@@ -162,7 +159,7 @@ void WorkerThread::DoRealWorks()
                 continue;
             }
 
-            ZmqMessagePtr rsp = m_messageProcessor.ProcessMessage(msg);
+            ZmqMessagePtr rsp = ProcessMessage(msg, m_pContext, m_config);
             PDEBUG ("Worker: message received from WorkerThread" );
             if (rsp && rsp->get() && !rsp->size())
             {

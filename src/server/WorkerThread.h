@@ -29,7 +29,6 @@ private:
     void DoRealWorks();
 
     ThreadPool<WorkerThread>* m_pPool;
-    MessageProcessor m_messageProcessor;
     ZmqContextPtr m_pContext;
     shared_ptr<ConfigParser> m_config;
 };

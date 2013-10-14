@@ -4,46 +4,29 @@
 #include <MessageBase.h>
 #include "AccountManager.h"
 #include <ZmqWrapper.h>
+#include "ConfigParser.h"
 
-class MessageProcessor;
-typedef shared_ptr<MessageProcessor> MessageProcessorPtr;
 typedef shared_ptr<Account> AccountPtr;
+typedef THMessagePtr (*CommandHandler)(const THMessage&,
+                                       const ZmqContextPtr& gContext,
+                                       const ConfigParserPtr& gConfig);
 
-class MsgPrsPrivate;
+/**
+ * @name RegisterCommandHandler - Register handler to process given command
+ * @param cmd -  cmd
+ * @param handler -  handler
+ * @return true if succeeded.
+ */
+bool RegisterCommandHandler(Command cmd, CommandHandler handler);
 
-typedef THMessagePtr (*CommandHandler)(const THMessage&, MsgPrsPrivate& privData);
-typedef map<int, CommandHandler> HandlerMap;
-
-class MsgPrsPrivate
-{
-public:
-    MsgPrsPrivate();
-    virtual ~MsgPrsPrivate();
-
-    void Reset();
-
-    string       m_errMsg;
-    AccountPtr   m_account;
-
-    AccountStatus m_status;
-
-    string m_sessionId;
-};
-
-
-class MessageProcessor
-{
-public:
-    static bool RegisterCommandHandler(Command cmd, CommandHandler handler);
-    virtual ~MessageProcessor();
-    MessageProcessor();
-    ZmqMessagePtr ProcessMessage(const ZmqMessagePtr& msg);
-private:
-    static HandlerMap m_commandHandlers;
-    THMessagePtr GenericErrorResponse(const THMessage& tmsg, ErrorCode err);
-
-    MsgPrsPrivate m_privateData; //Private data of this processor, should be bind to one connection.
-};
+/**
+ * @name ProcessMessage - Process a message.
+ * @param msg -  message to processed
+ * @return ZmqMessagePtr to returned to client.
+ */
+ZmqMessagePtr ProcessMessage(const ZmqMessagePtr& msg,
+                             const ZmqContextPtr& gContext,
+                             const ConfigParserPtr& gConfig);
 
 
 #endif /* _MESSAGEPROCESSOR_H_ */

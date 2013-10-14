@@ -18,7 +18,7 @@ r_match_CmdDict = re.compile("enum\s+Command.*?\{(.*?)\}", re.DOTALL)
 
 handler_reg_start = "bool InitCommandHandlers()\n{\n    bool result = true;\n"
 handler_reg_end = "    return  result;\n}\n"
-fmt_handler = "    result &= MessageProcessor::RegisterCommandHandler((Command)%d, &%s);\n"
+fmt_handler = "    result &= RegisterCommandHandler((Command)%d, &%s);\n"
 fmt_include = '#include "%s"'
 def FormatIncludeFile(fn):
     """
